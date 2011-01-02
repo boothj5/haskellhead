@@ -23,3 +23,5 @@ deckUsingNums = [(rank, suit) | suit <- suits, rank <- ranksNum]
 
 showCard :: (Num t, Ord t) => (t, [Char]) -> [Char]
 showCard (a, b) = showRank a ++ " of " ++ b
+
+showDeckAsCards a = map showCard a
