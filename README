@@ -1,5 +1,5 @@
 Implementation of shithead (tractor boy rules) in Haskell
 
-Currently just messing about with data types until I've actaully finshed the haskell book.
+Currently just messing about with data types until I've actaully finshed the haskell book.  It wont do anything at the moment, it's just a bunch of functions to run in GHCI
 
 It will eventually have the same functionality as the java version shithead.git
