@@ -17,3 +17,9 @@ showRank _                    = error "Not a card"
 
 deck :: [[Char]]
 deck = [showRank rank ++ " of " ++ suit | suit <- suits, rank <- ranksNum]
+
+deckUsingNums :: [(Integer, [Char])]
+deckUsingNums = [(rank, suit) | suit <- suits, rank <- ranksNum]
+
+showCard :: (Num t, Ord t) => (t, [Char]) -> [Char]
+showCard (a, b) = showRank a ++ " of " ++ b
