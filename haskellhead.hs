@@ -25,3 +25,31 @@ showCard :: (Num t, Ord t) => (t, [Char]) -> [Char]
 showCard (a, b) = showRank a ++ " of " ++ b
 
 showDeckAsCards a = map showCard a
+
+-- ---------------
+-- Card data types
+-- ---------------
+
+-- Very basic
+data Rank = Rank String deriving (Show)
+data Suit = Suit String deriving (Show)
+data Card = Card (Rank, Suit) deriving (Show)
+myCard = Card (Rank "THREE", Suit "HEARTS")
+
+getRank :: Card -> Rank
+getRank (Card (r, s)) = r
+
+-- Using record syntax
+data Card2 = Card2 {rank :: String, suit :: String} deriving (Show, Eq)
+myCard2 = Card2 {rank="THREE", suit="HEARTS"}
+myCard3 = Card2 {rank="THREE", suit="HEARTS"}
+myCard4 = Card2 {rank="NINE", suit="CLUBS"}
+
+-- Using enum for rank
+data Rank2 = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace
+            deriving (Show, Eq, Ord, Enum)
+
+data Suit2 = Hearts | Clubs | Diamonds | Spades deriving (Show, Eq)
+
+data Card3 = Card3 (Rank2, Suit2) deriving (Show, Eq)
+
