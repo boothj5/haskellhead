@@ -1,0 +1,80 @@
+import Data.List  
+  
+-- -----------------------------------------
+-- different approaches to calling functions
+-- -----------------------------------------
+
+-- Using the usual pattern matching and standard (left) associativity
+numUniques1 :: (Eq a) => [a] -> Int  
+numUniques1 xs = length (nub xs)
+
+-- Using function application (right associative)
+numUniques2 :: (Eq a) => [a] -> Int  
+numUniques2 xs = length $ nub xs
+
+-- Using function composition
+numUniques3 :: (Eq a) => [a] -> Int  
+numUniques3 = length . nub
+
+-- Using a lambda function
+numUniques4 :: (Eq a) => [a] -> Int  
+numUniques4 = \xs -> length (nub xs)
+
+-- Using a lambda function that uses function application
+numUniques5 :: (Eq a) => [a] -> Int  
+numUniques5 = \xs -> length $ nub xs
+
+-- Combining function composition and function application
+-- The associaticivity below is
+--      nub is first combined with length (left) 
+--          the result is a function that expects as list
+--      xs is passed to this new function composition by applying xs (right)
+numUniques6 :: (Eq a) => [a] -> Int  
+numUniques6 = \xs -> length . nub $ xs
+
+
+
+-- Foobar problem with guards, recursion and pattern matching
+printFooBar x | (x `mod` 3 == 0) && (x `mod` 5 == 0) = "foobar"
+			  | (x `mod` 3 == 0) 					 = "foo"
+			  | (x `mod` 5 == 0) 					 = "bar"
+			  | otherwise							 = show x
+
+fooBar100 []     = []
+fooBar100 (x:[]) = printFooBar x : []
+fooBar100 (x:xs) = printFooBar x : fooBar100 xs
+
+-- Foobar problem using list comprehension 
+fooBarBetter xs = [ if ((x `mod` 3 == 0) && (x `mod` 5 == 0)) then "foobar" 
+					else if (x `mod` 3 == 0) then "foo"
+					else if (x `mod` 5 == 0) then "bar"
+					else show x
+					| x <- xs , x <= 100 ]
+
+
+-- More list comprehension examples
+triangles = [ (a,b,c) | c <- [1..10], b <- [1..10], a <- [1..10] ]
+rightTriangles = [ (a,b,c) | c <- [1..10], b <- [1..c], a <- [1..b], a^2 + b^2 == c^2]  
+rightTriangles' = [ (a,b,c) | c <- [1..10], b <- [1..c], a <- [1..b], a^2 + b^2 == c^2, a+b+c == 24]  
+
+-- where keyword example
+bmiTell :: (RealFloat a) => a -> a -> String  
+bmiTell weight height  
+    | bmi <= skinny = "You're underweight, you emo, you!"  
+    | bmi <= normal = "You're supposedly normal. Pffft, I bet you're ugly!"  
+    | bmi <= fat    = "You're fat! Lose some weight, fatty!"  
+    | otherwise     = "You're a whale, congratulations!"  
+    where bmi = weight / height ^ 2  
+          skinny = 18.5  
+          normal = 25.0  
+          fat = 30.0  
+
+-- quicksort using let and list comprehension
+quicksort :: (Ord a) => [a] -> [a]  
+quicksort [] = []  
+quicksort (x:xs) =   
+    let smallerSorted = quicksort [a | a <- xs, a <= x]  
+        biggerSorted = quicksort [a | a <- xs, a > x]  
+    in  smallerSorted ++ [x] ++ biggerSorted  
+
+
