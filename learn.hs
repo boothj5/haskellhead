@@ -77,4 +77,33 @@ quicksort (x:xs) =
         biggerSorted = quicksort [a | a <- xs, a > x]  
     in  smallerSorted ++ [x] ++ biggerSorted  
 
+-- --------------------------------------------------------------------
+-- Different appraoches to finding a key in an association list [(k,v)]
+-- Just for illustration, this is all in Data.Map
+-- --------------------------------------------------------------------
 
+phonebook = [("James", "07747777468"), ("Home", "01473749749")]
+
+-- compose snd (second in tuple), head (first in list) and filter (using a lambda
+-- predicate to return those that match)
+-- This composed function will take a list so pass it using function application
+-- This implementation will result in exception if key not present (cannot call head on empty list)
+findKey1 :: (Eq k) => k -> [(k,v)] -> v
+findKey1 key xs = snd . head . filter (\(k,v) -> key == k) $ xs
+
+-- Exactly the same, but returns a partial function (which requires a list) instead
+findKey2 :: (Eq k) => k -> [(k,v)] -> v
+findKey2 key = snd . head . filter (\(k,v) -> key == k)
+
+-- Use Maybe data type so we can return nothing, or one element
+findKey3 :: (Eq k) => k -> [(k,v)] -> Maybe v  
+findKey3 key [] = Nothing  
+findKey3 key ((k,v):xs) = if key == k  
+                            then Just v  
+                            else findKey3 key xs
+
+-- Use a fold such a common pattern
+-- Note, we're not passing the list, so again we return a partial function that will
+-- take a list as a paramater
+findKey4 :: (Eq k) => k -> [(k,v)] -> Maybe v  
+findKey4 key = foldl (\acc (k,v) -> if key == k then Just v else acc) Nothing
