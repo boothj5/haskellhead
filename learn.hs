@@ -107,3 +107,48 @@ findKey3 key ((k,v):xs) = if key == k
 -- take a list as a paramater
 findKey4 :: (Eq k) => k -> [(k,v)] -> Maybe v  
 findKey4 key = foldl (\acc (k,v) -> if key == k then Just v else acc) Nothing
+
+-- --------------------------
+-- Higher order functions
+-- Type classes, functors etc
+-- --------------------------
+
+myAdd2 :: (Num a) => a -> a
+myAdd2 = (+) 2
+
+myAdd2AndShow :: (Num a) => a -> String
+myAdd2AndShow = show . myAdd2
+
+-- Map is an fmap over lists
+-- fmap :: (a -> b) -> f a -> f b
+--  takes 
+--      function of type a to type b
+--      type contrucur that takes type a as parameter (think Maybe)
+--      returns type contructor that takes type b as parameter
+-- map :: (a -> b) -> [a] -> [b]
+--  takes
+--      function of type a to type b
+--      type contructor of [] a
+--      return types constructor of [] b
+
+-- map myAdd2 [1,2,3,4]
+-- map show [1,2,3,4]
+
+-- Types that can act like boxes can be instances of Functor
+-- Lists, Maybe, LinkedList (below)
+--
+-- fmap myAdd2 $ Just 3
+-- fmap show $ Just 3
+
+data LinkedList a = EmptyList | Node a (LinkedList a)
+    deriving (Show)
+
+instance Functor LinkedList where
+    fmap f EmptyList = EmptyList
+    fmap f (Node item (rest)) = Node (f item) (fmap f (rest))
+
+listInsert :: (Ord a) => a -> LinkedList a -> LinkedList a
+listInsert item EmptyList       = Node item (EmptyList)
+listInsert item (Node elem (rest)) 
+    | item <= elem  = Node item (Node elem (rest))
+    | item > elem   = Node elem (listInsert item rest)
