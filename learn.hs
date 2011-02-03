@@ -1,4 +1,5 @@
 import Data.List  
+import Control.Applicative
   
 -- -----------------------------------------
 -- different approaches to calling functions
@@ -56,18 +57,6 @@ fooBarBetter xs = [ if ((x `mod` 3 == 0) && (x `mod` 5 == 0)) then "foobar"
 triangles = [ (a,b,c) | c <- [1..10], b <- [1..10], a <- [1..10] ]
 rightTriangles = [ (a,b,c) | c <- [1..10], b <- [1..c], a <- [1..b], a^2 + b^2 == c^2]  
 rightTriangles' = [ (a,b,c) | c <- [1..10], b <- [1..c], a <- [1..b], a^2 + b^2 == c^2, a+b+c == 24]  
-
--- where keyword example
-bmiTell :: (RealFloat a) => a -> a -> String  
-bmiTell weight height  
-    | bmi <= skinny = "You're underweight, you emo, you!"  
-    | bmi <= normal = "You're supposedly normal. Pffft, I bet you're ugly!"  
-    | bmi <= fat    = "You're fat! Lose some weight, fatty!"  
-    | otherwise     = "You're a whale, congratulations!"  
-    where bmi = weight / height ^ 2  
-          skinny = 18.5  
-          normal = 25.0  
-          fat = 30.0  
 
 -- quicksort using let and list comprehension
 quicksort :: (Ord a) => [a] -> [a]  
@@ -140,15 +129,96 @@ myAdd2AndShow = show . myAdd2
 -- fmap myAdd2 $ Just 3
 -- fmap show $ Just 3
 
+-- LinkedList of any type to learn about functors
 data LinkedList a = EmptyList | Node a (LinkedList a)
     deriving (Show)
 
+-- Create my instance of functor
 instance Functor LinkedList where
     fmap f EmptyList = EmptyList
     fmap f (Node item (rest)) = Node (f item) (fmap f (rest))
 
+instance Applicative LinkedList where
+   pure n = Node n EmptyList
+   EmptyList <*> _ = EmptyList
+   _ <*> EmptyList = EmptyList
+   (Node f (r1)) <*> (Node n (r2)) = Node (f n) (r1 <*> r2)
+
+
+-- insert an ordered elemet
 listInsert :: (Ord a) => a -> LinkedList a -> LinkedList a
 listInsert item EmptyList       = Node item (EmptyList)
 listInsert item (Node elem (rest)) 
     | item <= elem  = Node item (Node elem (rest))
     | item > elem   = Node elem (listInsert item rest)
+
+-- get an element by index (starting at 0)
+listGet :: (Integral n) => n -> LinkedList a -> Maybe a
+listGet index EmptyList  = Nothing 
+listGet 0 (Node elem _) = Just elem
+listGet index (Node elem (rest)) = (listGet (index - 1) rest)
+
+-- If the integral is divisible by 3, add 2, otherwise return the integral
+ifDivBy3Add2 :: (Integral t) => t -> t
+ifDivBy3Add2 n | (rem n 3 /= 0) = n
+               | otherwise      = n + 2
+
+
+-- myList to test out the functors
+myList = Node 1 (Node 2 (Node 3 (Node 4 (Node 5 (Node 6 (Node 7 (Node 8 (Node 9 (Node 10 EmptyList)))))))))
+-- myCharList = Node 'C' (Node 'H' (Node 'A' (Node 'R' EmptyList)))
+
+-- simple function map, multiply elemets by 100
+-- the following:
+--      fmap (*100) myList
+-- is tha same, but this helps to show how the mapped function list works later
+newList = fmap (\value -> value * 100) myList
+-- newCharList = fmap (\value -> value * 100) myCharList
+
+-- Shows how the list of one type can be mapped to a completely different type
+-- Integral -> Bool
+biggerThan2 = fmap (>2) myList
+
+-- map my own function
+anotherList = fmap ifDivBy3Add2 myList
+
+-- create a list of partial functions
+-- item 0 = 1 * 
+-- item 1 = 2 *
+-- etc
+functionList = fmap (*) myList
+
+-- Madness, for each element in the list, apply the function in tha map
+-- Value gets replace with a partial function which is then applied to 2
+-- So:
+-- Item 0 = 1 *
+-- NewItem 0 = (\1 * -> 1 * 2)   <- Substitute in the lambda
+-- NewItem 0 = 2
+-- Item 1 = 2 *
+-- NewItem 1 = (\2 * -> 2 * 2)   <- Substitute in the lambda
+-- NewItem 1 = 4
+-- etc
+mappedFunctionList = fmap (\value -> value 2) functionList
+
+-- How about applying one list of partial functions, to another list of values??
+-- Use applicative functor, see instance above
+applicativeMappedList = functionList <*> myList
+
+-- Main IO action for testing
+main = do
+    putStrLn $ show myList
+--     putStrLn $ show myCharList
+    putStrLn ""
+    putStrLn $ show newList
+    putStrLn $ show biggerThan2
+    putStrLn $ show anotherList
+    putStrLn ""
+    putStrLn $ show $ listGet 0 myList
+    putStrLn $ show $ listGet 5 myList
+    putStrLn $ show $ listGet 10 myList
+    putStrLn ""
+    putStrLn $ show mappedFunctionList
+    putStrLn $ show applicativeMappedList
+
+--    putStrLn $ show $ myFunction 10
+--    putStrLn $ show appliedList
