@@ -206,6 +206,11 @@ applicativeMappedList = functionList <*> myList
 -- add two LinkedLists together
 addedLists = pure (+) <*> myList <*> applicativeMappedList
 
+-- alternative added lists
+alternativeAddedLists = (+) <$> myList <*> applicativeMappedList
+
+-- Add three lists
+threeAddedLists = (+) <$> ((+) <$> myList <*> applicativeMappedList) <*> newList
 
 -- Main IO action for testing
 main = do
@@ -237,6 +242,13 @@ main = do
     putStrLn ""
     putStrLn "Add myList to the previous list"
     putStrLn $ show addedLists
+    putStrLn ""
+    putStrLn "Add with '(+) <$> list1 <*> list2' instead of 'pure (+) <*> list1 <*> list2'"
+    putStrLn $ show alternativeAddedLists
+    putStrLn ""
+    putStrLn "Add the *100 list too with  '(+) <$> ((+) <$> list1 <*> list2) <*> list3'"
+    putStrLn $ show threeAddedLists
+
 
 --    putStrLn $ show $ myFunction 10
 --    putStrLn $ show appliedList
