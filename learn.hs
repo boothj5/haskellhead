@@ -139,7 +139,7 @@ instance Functor LinkedList where
     fmap f (Node item (rest)) = Node (f item) (fmap f (rest))
 
 instance Applicative LinkedList where
-   pure n = Node n EmptyList
+   pure n = Node n (pure n)
    EmptyList <*> _ = EmptyList
    _ <*> EmptyList = EmptyList
    (Node f (r1)) <*> (Node n (r2)) = Node (f n) (r1 <*> r2)
@@ -164,9 +164,8 @@ ifDivBy3Add2 n | (rem n 3 /= 0) = n
                | otherwise      = n + 2
 
 
--- myList to test out the functors
+-- LinkedLists to test out the functors
 myList = Node 1 (Node 2 (Node 3 (Node 4 (Node 5 (Node 6 (Node 7 (Node 8 (Node 9 (Node 10 EmptyList)))))))))
--- myCharList = Node 'C' (Node 'H' (Node 'A' (Node 'R' EmptyList)))
 
 -- simple function map, multiply elemets by 100
 -- the following:
@@ -204,21 +203,40 @@ mappedFunctionList = fmap (\value -> value 2) functionList
 -- Use applicative functor, see instance above
 applicativeMappedList = functionList <*> myList
 
+-- add two LinkedLists together
+addedLists = pure (+) <*> myList <*> applicativeMappedList
+
+
 -- Main IO action for testing
 main = do
+
+    
+    putStrLn "myList:"
     putStrLn $ show myList
---     putStrLn $ show myCharList
     putStrLn ""
+    putStrLn "Multiply each item by 100 using fmap"
     putStrLn $ show newList
+    putStrLn ""
+    putStrLn "Test each bigger than 2 using fmap"
     putStrLn $ show biggerThan2
+    putStrLn ""
+    putStrLn "If divisible by 3 add 2"
     putStrLn $ show anotherList
     putStrLn ""
+    putStrLn "Elements 0, 5 and 10"
     putStrLn $ show $ listGet 0 myList
     putStrLn $ show $ listGet 5 myList
     putStrLn $ show $ listGet 10 myList
     putStrLn ""
+    putStrLn "fmap a function (which takes a function and passes it 2) to a list"
+    putStrLn "containing items of the function (item *)"     
     putStrLn $ show mappedFunctionList
+    putStrLn ""
+    putStrLn "Apply the list with item = (item *) to the myList, essentially squaring the list"
     putStrLn $ show applicativeMappedList
+    putStrLn ""
+    putStrLn "Add myList to the previous list"
+    putStrLn $ show addedLists
 
 --    putStrLn $ show $ myFunction 10
 --    putStrLn $ show appliedList
