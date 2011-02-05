@@ -105,5 +105,17 @@ main = do
     putStrLn $ show concatList
     putStrLn ""
  
+    let firstList = Node 2 (Node 3 EmptyList)
+        secondList = Node 10 (Node 12 EmptyList)
+        concatList = getConcList $ ConcList firstList `mappend` ConcList secondList
+        concatThreeList = getConcList $ ConcList firstList `mappend` ConcList secondList `mappend` ConcList firstList
 
+    putStrLn "firstList:"
+    putStrLn $ show firstList
+    putStrLn "secondList:"
+    putStrLn $ show secondList
+    putStrLn "getConcList $ ConcList firstList `mappend` ConcList secondList"
+    putStrLn $ show concatList
+    putStrLn "getConcList $ ConcList firstList 'mappend' ConcList secondList `mappend` ConcList firstList"
+    putStrLn $ show concatThreeList
 
