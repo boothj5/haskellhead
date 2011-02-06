@@ -1,10 +1,14 @@
 import Control.Applicative
 import Data.Monoid
+import qualified Data.Foldable as F
   
 data LinkedList a = EmptyList | Node a (LinkedList a)
-    deriving (Show)
+    deriving (Show, Eq)
 
 newtype ConcList a = ConcList { getConcList :: LinkedList a }
+    deriving (Show)
+
+newtype CombList a = CombList { getCombList :: LinkedList a } 
     deriving (Show)
 
 instance Functor LinkedList where
@@ -25,6 +29,17 @@ instance Monoid (ConcList a) where
     mappend (ConcList (Node n (EmptyList))) l2 = ConcList (Node n (getConcList l2))
     mappend (ConcList (Node n r1)) l2 = ConcList (Node n (getConcList (((ConcList r1) `mappend` l2))))
 
+instance (Ord a) => Monoid (CombList a) where
+    mempty = CombList EmptyList
+    mappend l (CombList EmptyList) = l
+    mappend (CombList EmptyList) l = l
+    mappend (CombList (Node n EmptyList)) l2 = CombList (listInsert n (getCombList l2))
+    mappend (CombList (Node n r1)) l2 = CombList r1 `mappend` CombList (listInsert n (getCombList l2))
+
+instance F.Foldable LinkedList where
+    foldMap f EmptyList = mempty
+    foldMap f (Node n rest) = f n `mappend` F.foldMap f rest
+    
 listInsert :: (Ord a) => a -> LinkedList a -> LinkedList a
 listInsert item EmptyList       = Node item (EmptyList)
 listInsert item (Node elem (rest)) 
@@ -109,7 +124,6 @@ main = do
         secondList = Node 10 (Node 12 EmptyList)
         concatList = getConcList $ ConcList firstList `mappend` ConcList secondList
         concatThreeList = getConcList $ ConcList firstList `mappend` ConcList secondList `mappend` ConcList firstList
-
     putStrLn "firstList:"
     putStrLn $ show firstList
     putStrLn "secondList:"
@@ -118,4 +132,21 @@ main = do
     putStrLn $ show concatList
     putStrLn "getConcList $ ConcList firstList 'mappend' ConcList secondList `mappend` ConcList firstList"
     putStrLn $ show concatThreeList
+    putStrLn ""
+
+    let comb1 = Node 1 (Node 3 (Node 6 EmptyList))
+        comb2 = Node 2 (Node 7 (Node 8 EmptyList))
+        combined = getCombList $ CombList comb1 `mappend` CombList comb2
+    putStrLn "comb1:"
+    putStrLn $ show comb1
+    putStrLn "comb2:"
+    putStrLn $ show comb2
+    putStrLn $ "combined = getCombList $ CombList comb1 `mappend` CombList comb2"
+    putStrLn $ show combined
+    putStrLn ""
+
+    let added = F.foldl (+) 0 myList
+    putStrLn "added = F.foldl (+) 0 myList"
+    putStrLn $ show added
+
 
