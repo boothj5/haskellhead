@@ -3,6 +3,8 @@ import Control.Monad.Writer
 import Data.Monoid
 import qualified Data.Foldable as F
   
+-- types and typeclass instances
+
 data LinkedList a = EmptyList | Node a (LinkedList a)
     deriving (Show, Eq)
 
@@ -41,44 +43,65 @@ instance F.Foldable LinkedList where
     foldMap f EmptyList = mempty
     foldMap f (Node n rest) = f n `mappend` F.foldMap f rest
     
+-- LinkedList functions
 listInsert :: (Ord a) => a -> LinkedList a -> LinkedList a
-listInsert item EmptyList       = Node item (EmptyList)
+listInsert item EmptyList = Node item (EmptyList)
 listInsert item (Node elem (rest)) 
     | item <= elem = Node item (Node elem (rest))
     | item > elem  = Node elem (listInsert item rest)
 
 listGet :: (Integral n) => n -> LinkedList a -> Maybe a
-listGet index EmptyList  = Nothing 
-listGet 0 (Node elem _) = Just elem
+listGet index EmptyList          = Nothing 
+listGet 0 (Node elem _)          = Just elem
 listGet index (Node elem (rest)) = (listGet (index - 1) rest)
+
+listSize :: LinkedList a -> Int
+listSize EmptyList          = 0 
+listSize (Node n EmptyList) = 1
+listSize (Node n rest)      = 1 + listSize rest
+
+listRemove :: (Integral n) => n -> LinkedList a -> LinkedList a
+listRemove _ EmptyList          = EmptyList
+listRemove 0 (Node n EmptyList) = EmptyList
+listRemove 0 (Node n rest)      = rest
+listRemove index (Node n rest)  = Node n (listRemove (index -1) rest)
+
+-- Tests
+myList = Node 1 (Node 2 (Node 3 (Node 4 (Node 5 (Node 6 (Node 7 (Node 8 (Node 9 (Node 10 EmptyList)))))))))
+
+newList = fmap (\value -> value * 100) myList
+
+biggerThan2 = fmap (>2) myList
 
 ifDivBy3Add2 :: (Integral t) => t -> t
 ifDivBy3Add2 n | (rem n 3 /= 0) = n
                | otherwise      = n + 2
 
-
-
-myList = Node 1 (Node 2 (Node 3 (Node 4 (Node 5 (Node 6 (Node 7 (Node 8 (Node 9 (Node 10 EmptyList)))))))))
-newList = fmap (\value -> value * 100) myList
-biggerThan2 = fmap (>2) myList
 anotherList = fmap ifDivBy3Add2 myList
+
 functionList = fmap (*) myList
 mappedFunctionList = fmap (\value -> value 2) functionList
 applicativeMappedList = functionList <*> myList
 addedLists = pure (+) <*> myList <*> applicativeMappedList
 alternativeAddedLists = (+) <$> myList <*> applicativeMappedList
 threeAddedLists = (+) <$> ((+) <$> myList <*> applicativeMappedList) <*> newList
+
 orderList = Node "First:" (Node "Second:" (Node "Third:" (Node "Fourth:" EmptyList)))
 someStrList = Node "James" (Node "Steve" (Node "Dave" (Node "Mike" EmptyList)))
 concatList = (++) <$> orderList <*> someStrList
+
 firstList = Node 2 (Node 3 EmptyList)
 secondList = Node 10 (Node 12 EmptyList)
 appConcatList = getConcList $ ConcList firstList `mappend` ConcList secondList
 concatThreeList = getConcList $ ConcList firstList `mappend` ConcList secondList `mappend` ConcList firstList
+
 comb1 = Node 1 (Node 3 (Node 6 EmptyList))
 comb2 = Node 2 (Node 7 (Node 8 EmptyList))
 combined = getCombList $ CombList comb1 `mappend` CombList comb2
+
 added = F.foldl (+) 0 myList
+
+treeList = Node comb1 (Node comb2 (Node myList EmptyList))
 
 
 main = do
