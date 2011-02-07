@@ -1,4 +1,5 @@
 import Control.Applicative
+import Control.Monad.Writer
 import Data.Monoid
 import qualified Data.Foldable as F
   
@@ -43,8 +44,8 @@ instance F.Foldable LinkedList where
 listInsert :: (Ord a) => a -> LinkedList a -> LinkedList a
 listInsert item EmptyList       = Node item (EmptyList)
 listInsert item (Node elem (rest)) 
-    | item <= elem  = Node item (Node elem (rest))
-    | item > elem   = Node elem (listInsert item rest)
+    | item <= elem = Node item (Node elem (rest))
+    | item > elem  = Node elem (listInsert item rest)
 
 listGet :: (Integral n) => n -> LinkedList a -> Maybe a
 listGet index EmptyList  = Nothing 
@@ -56,8 +57,31 @@ ifDivBy3Add2 n | (rem n 3 /= 0) = n
                | otherwise      = n + 2
 
 
+
+myList = Node 1 (Node 2 (Node 3 (Node 4 (Node 5 (Node 6 (Node 7 (Node 8 (Node 9 (Node 10 EmptyList)))))))))
+newList = fmap (\value -> value * 100) myList
+biggerThan2 = fmap (>2) myList
+anotherList = fmap ifDivBy3Add2 myList
+functionList = fmap (*) myList
+mappedFunctionList = fmap (\value -> value 2) functionList
+applicativeMappedList = functionList <*> myList
+addedLists = pure (+) <*> myList <*> applicativeMappedList
+alternativeAddedLists = (+) <$> myList <*> applicativeMappedList
+threeAddedLists = (+) <$> ((+) <$> myList <*> applicativeMappedList) <*> newList
+orderList = Node "First:" (Node "Second:" (Node "Third:" (Node "Fourth:" EmptyList)))
+someStrList = Node "James" (Node "Steve" (Node "Dave" (Node "Mike" EmptyList)))
+concatList = (++) <$> orderList <*> someStrList
+firstList = Node 2 (Node 3 EmptyList)
+secondList = Node 10 (Node 12 EmptyList)
+appConcatList = getConcList $ ConcList firstList `mappend` ConcList secondList
+concatThreeList = getConcList $ ConcList firstList `mappend` ConcList secondList `mappend` ConcList firstList
+comb1 = Node 1 (Node 3 (Node 6 EmptyList))
+comb2 = Node 2 (Node 7 (Node 8 EmptyList))
+combined = getCombList $ CombList comb1 `mappend` CombList comb2
+added = F.foldl (+) 0 myList
+
+
 main = do
-    let myList = Node 1 (Node 2 (Node 3 (Node 4 (Node 5 (Node 6 (Node 7 (Node 8 (Node 9 (Node 10 EmptyList)))))))))
     putStrLn "myList"
     putStrLn $ show myList
     putStrLn ""
@@ -67,51 +91,39 @@ main = do
     putStrLn $ show $ listGet 10 myList
     putStrLn ""
  
-    let newList = fmap (\value -> value * 100) myList
     putStrLn "newList = fmap (\\value -> value * 100) myList"
     putStrLn $ show newList
     putStrLn ""
 
-    let biggerThan2 = fmap (>2) myList
     putStrLn "biggerThan2 = fmap (>2) myList"
     putStrLn $ show biggerThan2
     putStrLn ""
  
-    let anotherList = fmap ifDivBy3Add2 myList
     putStrLn "anotherList = fmap ifDivBy3Add2 myList"
     putStrLn $ show anotherList
     putStrLn ""
  
-    let functionList = fmap (*) myList
-        mappedFunctionList = fmap (\value -> value 2) functionList
     putStrLn "functionList = fmap (*) myList"
     putStrLn "mappedFunctionList = fmap (\\value -> value 2) functionList"
     putStrLn $ show mappedFunctionList
     putStrLn ""
  
-    let applicativeMappedList = functionList <*> myList
     putStrLn "applicativeMappedList = functionList <*> myList"
     putStrLn $ show applicativeMappedList
     putStrLn ""
  
-    let addedLists = pure (+) <*> myList <*> applicativeMappedList
     putStrLn "addedLists = pure (+) <*> myList <*> applicativeMappedList"
     putStrLn $ show addedLists
     putStrLn ""
  
-    let alternativeAddedLists = (+) <$> myList <*> applicativeMappedList
     putStrLn "alternativeAddedLists = (+) <$> myList <*> applicativeMappedList"
     putStrLn $ show alternativeAddedLists
     putStrLn ""
  
-    let threeAddedLists = (+) <$> ((+) <$> myList <*> applicativeMappedList) <*> newList
     putStrLn "threeAddedLists = (+) <$> ((+) <$> myList <*> applicativeMappedList) <*> newList"
     putStrLn $ show threeAddedLists
     putStrLn ""
     
-    let orderList = Node "First:" (Node "Second:" (Node "Third:" (Node "Fourth:" EmptyList)))
-        someStrList = Node "James" (Node "Steve" (Node "Dave" (Node "Mike" EmptyList)))
-        concatList = (++) <$> orderList <*> someStrList
     putStrLn "orderList:"
     putStrLn $ show orderList
     putStrLn "someStrList:"
@@ -120,23 +132,16 @@ main = do
     putStrLn $ show concatList
     putStrLn ""
  
-    let firstList = Node 2 (Node 3 EmptyList)
-        secondList = Node 10 (Node 12 EmptyList)
-        concatList = getConcList $ ConcList firstList `mappend` ConcList secondList
-        concatThreeList = getConcList $ ConcList firstList `mappend` ConcList secondList `mappend` ConcList firstList
     putStrLn "firstList:"
     putStrLn $ show firstList
     putStrLn "secondList:"
     putStrLn $ show secondList
     putStrLn "getConcList $ ConcList firstList `mappend` ConcList secondList"
-    putStrLn $ show concatList
+    putStrLn $ show appConcatList
     putStrLn "getConcList $ ConcList firstList 'mappend' ConcList secondList `mappend` ConcList firstList"
     putStrLn $ show concatThreeList
     putStrLn ""
 
-    let comb1 = Node 1 (Node 3 (Node 6 EmptyList))
-        comb2 = Node 2 (Node 7 (Node 8 EmptyList))
-        combined = getCombList $ CombList comb1 `mappend` CombList comb2
     putStrLn "comb1:"
     putStrLn $ show comb1
     putStrLn "comb2:"
@@ -145,7 +150,6 @@ main = do
     putStrLn $ show combined
     putStrLn ""
 
-    let added = F.foldl (+) 0 myList
     putStrLn "added = F.foldl (+) 0 myList"
     putStrLn $ show added
 
