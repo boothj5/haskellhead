@@ -62,7 +62,6 @@ listSize (Node n rest)      = 1 + listSize rest
 
 listRemove :: (Integral n) => n -> LinkedList a -> LinkedList a
 listRemove _ EmptyList          = EmptyList
-listRemove 0 (Node n EmptyList) = EmptyList
 listRemove 0 (Node n rest)      = rest
 listRemove index (Node n rest)  = Node n (listRemove (index -1) rest)
 
