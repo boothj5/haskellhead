@@ -6,7 +6,7 @@ import qualified Data.Foldable as F
 -- types and typeclass instances
 
 data LinkedList a = EmptyList | Node a (LinkedList a)
-    deriving (Show, Eq)
+    deriving (Show)
 
 newtype ConcList a = ConcList { getConcList :: LinkedList a }
     deriving (Show)
