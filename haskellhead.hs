@@ -30,7 +30,7 @@ instance Show Player where
 -- Game state type
 data GameDetails = GameDetails {
         numPlayers      :: !Int
-       ,players         :: ![String]
+       ,players         :: ![Player]
        ,numCardsEach    :: !Int
        ,deck            :: ![Card]
     } 
@@ -42,7 +42,7 @@ instance Show GameDetails where
                       ,deck         = d
                      } =  "\nGame Details: " 
                           ++ "\nPlayers: " ++ show n
-                          ++ "\nNames: " ++ show p
+                          ++ "\nPlayers details: " ++ show p
                           ++ "\nCards Each: " ++ show c
                           ++ "\nDeck : " ++ show d
 -- Initial state
@@ -98,6 +98,41 @@ jamesFaceDown = [Card Seven Clubs, Card Ten Diamonds]
 
 james = Player {name="James", hand=jamesHand, faceUp=jamesFaceUp, faceDown=jamesFaceDown}
 
+createPlayers :: [String] -> [Player]
+createPlayers [] = []
+createPlayers (x:[]) = ( Player { name = x, hand = [], faceUp = [], faceDown = []} ) : []
+createPlayers (x:xs) = ( Player { name = x, hand = [], faceUp = [], faceDown = []} ) : createPlayers xs
+
+addToPlayersHand :: Player -> Card -> Player
+addToPlayersHand p c = Player { name = ( name p )
+                                    ,hand = ( c : (hand p) )
+                                    ,faceUp = ( faceUp p )
+                                    ,faceDown = ( faceDown p )
+                                   }
+
+addToPlayersFaceUp :: Player -> Card -> Player
+addToPlayersFaceUp p c = Player { name = ( name p )
+                                    ,hand = ( hand p )
+                                    ,faceUp = ( c : (faceUp p) )
+                                    ,faceDown = ( faceDown p )
+                                   }
+
+
+addToPlayersFaceDown :: Player -> Card -> Player
+addToPlayersFaceDown p c = Player { name = ( name p )
+                                    ,hand = ( hand p )
+                                    ,faceUp = ( faceUp p )
+                                    ,faceDown = ( c : (faceDown p) )
+                                   }
+
+addToNamedPlayersHand :: String -> [Player] -> Card -> [Player]
+addToNamedPlayersHand _ []     _ = []
+addToNamedPlayersHand n (p:ps) c | n == (name p) = (addToPlayersHand p c) : ps
+                                 | otherwise     = p : (addToNamedPlayersHand n ps c)
+                              
+    
+-- addToNamedPlayersHand :: String -> [Player] -> Card -> [Player]
+
 getGameInfo = do
     putStrLn "Enter number of players:"
     players <- fmap read getLine
@@ -117,7 +152,9 @@ getPlayerNames = do
         putStrLn $ "Enter name for player " ++ show a ++ ":"  
         playerName <- getLine  
         return playerName)  
-    modifyGame $ \st -> st { players = playerNames } 
+    
+    let newPlayers = createPlayers playerNames 
+    modifyGame $ \st -> st { players = newPlayers } 
 
 showGame = do
     game <- readIORef state
@@ -127,6 +164,7 @@ clearScreen = do
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
 
 main = do
     startState <- readIORef state
@@ -145,5 +183,24 @@ main = do
 --            False -> putStrLn "Less than or 3 cards"
     showGame
     
+    putStrLn ""
+    putStrLn "Tested adding to hand"
+    
+    oPlayers <- getGameProperty players
+    
+    toDeal <- getGameProperty deck
+    
+    
+    let cardToDeal = head toDeal
+        rest = tail toDeal
+        nPlayers = addToNamedPlayersHand "James" oPlayers cardToDeal
+    
+    modifyGame $ \st ->
+                    st { players = nPlayers
+                        ,deck = rest 
+                       }
+    
+    showGame
+                    
     
             
