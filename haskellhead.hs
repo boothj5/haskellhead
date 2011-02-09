@@ -62,16 +62,12 @@ modifyGame :: (GameDetails -> GameDetails) -> IO ()
 modifyGame  f = modifyIORef state f
 
 -- game functions
-totalCardsNeeded :: (Num a) => a -> a -> a
-totalCardsNeeded cs ps = cs * ps * 3
-
-additional :: (Integral a, Num t) => a -> t
-additional cs | cs `mod` 52 > 0 = 1
-       | otherwise       = 0  
-
 numDecksRequired :: (Integral t, Integral a) => a -> a -> t
-numDecksRequired cs ps = ( (\x -> truncate $ x / 52) $ fromIntegral $ totalCardsNeeded cs ps ) + ( additional $ totalCardsNeeded cs ps )
-
+numDecksRequired cs ps = ( div52 $ fromIntegral $ total cs ps ) + ( remDeck $ total cs ps )
+    where div52     = (\x -> truncate $ x / 52)
+          remDeck   = (\x -> if x `mod` 52 > 0 then 1 else 0 )
+          total     = (\x y -> x * y * 3)
+          
 getNewDeckWithEnoughCards :: Int -> [Card]
 getNewDeckWithEnoughCards 0 = []
 getNewDeckWithEnoughCards 1 = getNewDeck
