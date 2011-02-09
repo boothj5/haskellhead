@@ -27,8 +27,9 @@ instance Show Player where
 
 -- Game state type
 data GameState = GameState {
-        numPlayers     :: !Int
-       ,numCardsEach   :: !Int
+        numPlayers      :: !Int
+       ,numCardsEach    :: !Int
+       ,deck            :: ![Card]
     } deriving (Show)
 
 -- The initial state
@@ -36,6 +37,7 @@ emptySt :: GameState
 emptySt = GameState {
         numPlayers      = 0
        ,numCardsEach    = 0
+       ,deck           = []
     }
 
 -- Global state
@@ -68,9 +70,14 @@ additional cs | cs `mod` 52 > 0 = 1
 numDecksRequired :: (Integral t, Integral a) => a -> a -> t
 numDecksRequired cs ps = ( divided $ fromIntegral $ totalCardsNeeded cs ps ) + ( additional $ totalCardsNeeded cs ps )
 
+getNewDeckWithEnoughCards :: Int -> [Card]
+getNewDeckWithEnoughCards 0 = []
+getNewDeckWithEnoughCards 1 = getNewDeck
+getNewDeckWithEnoughCards n = getNewDeck ++ (getNewDeckWithEnoughCards $ n-1)
+
 -- Some simple values
-deck :: [Card]
-deck = [Card rank suit | suit <- [Hearts, Clubs, Diamonds, Spades], rank <- [Two .. Ace]]
+getNewDeck :: [Card]
+getNewDeck = [Card rank suit | suit <- [Hearts, Clubs, Diamonds, Spades], rank <- [Two .. Ace]]
 
 jamesHand :: [Card]
 jamesHand = [Card Three Diamonds, Card Two Hearts]
@@ -86,32 +93,34 @@ james = Player {name="James", hand=jamesHand, faceUp=jamesFaceUp, faceDown=james
 getGameInfo = do
 
     putStrLn "Enter number of players:"
-    enteredPlayers <- fmap read getLine
+    players <- fmap read getLine
   
     putStrLn "Enter number of cards per hand:"
-    enteredCardsEach <- fmap read getLine
-
-    writeIORef state GameState { numPlayers = enteredPlayers, numCardsEach = enteredCardsEach } 
+    cards <- fmap read getLine
 
     newState <- readIORef state
     putStrLn $ show newState
 
-    let decks = numDecksRequired enteredCardsEach enteredPlayers
+    let decks = numDecksRequired cards players
+        newDeck = getNewDeckWithEnoughCards decks
     putStrLn $ "Number of decks: " ++ show decks
+    
+    modifyGame $ \st ->
+                    st { numPlayers     = players
+                        ,numCardsEach   = cards
+                        ,deck           = newDeck 
+                       } 
 
 showDeck = do
     putStrLn "Deck:"
-    print deck
+    print getNewDeck
 
 showPlayers = do 
     print james
 
 showGame = do
-    getPlayers <- getGameProperty numPlayers
-    getCardsEach <- getGameProperty numCardsEach
-    
-    putStrLn $ "Number of players = " ++ show getPlayers
-    putStrLn $ "Number of cards each = " ++ show getCardsEach
+    game <- readIORef state
+    putStrLn $ show game
 
 main = do
     startState <- readIORef state
@@ -136,9 +145,5 @@ main = do
             
     showGame
     
-    modifyGame $ \st ->
-                    st { numCardsEach = 0 }
-                    
-    showGame
-            
+    
             
