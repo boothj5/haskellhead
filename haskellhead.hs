@@ -1,14 +1,16 @@
 import System.IO.Unsafe         (unsafePerformIO)
+import Control.Monad
 import Data.Char
 import Data.IORef
 
--- Rank, Suit and Card types
+-- Card type
 data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace 
             deriving (Show, Eq, Ord, Enum)
 
 data Suit = Hearts | Clubs | Diamonds | Spades deriving (Show, Eq)
 
 data Card = Card Rank Suit deriving (Eq)
+
 instance Show Card where
     show (Card rank suit) = show rank ++ " of " ++ show suit
 
@@ -18,57 +20,57 @@ data Player = Player { name :: String
                        , faceUp :: [Card]
                        , faceDown :: [Card] 
                      } 
+
 instance Show Player where
     show (Player {name=n, hand=h, faceUp=u, faceDown=d}) = "\nplayer name: " ++ n
                                                            ++ "\nhand: " ++ show h
                                                            ++ "\nfaceUp: " ++ show u
                                                            ++ "\nfaceDown: " ++ show d
 
-
 -- Game state type
-data GameState = GameState {
+data GameDetails = GameDetails {
         numPlayers      :: !Int
+       ,players         :: ![String]
        ,numCardsEach    :: !Int
        ,deck            :: ![Card]
     } deriving (Show)
 
--- The initial state
-emptySt :: GameState
-emptySt = GameState {
+-- Initial state
+emptySt :: GameDetails
+emptySt = GameDetails {
         numPlayers      = 0
+       ,players         = []
        ,numCardsEach    = 0
        ,deck           = []
     }
 
--- Global state
-state :: IORef GameState
+-- Global state variable
+state :: IORef GameDetails
 state = unsafePerformIO $ newIORef emptySt
 {-# NOINLINE state #-}
 
 -- Access a component of the state with a projection function
-getGameProperty :: (GameState -> a) -> IO a
+getGameProperty :: (GameDetails -> a) -> IO a
 getGameProperty f = withGame (return . f)
    
 -- Perform a (read-only) IO action on the state
-withGame :: (GameState -> IO a) -> IO a
+withGame :: (GameDetails -> IO a) -> IO a
 withGame f = readIORef state >>= f
 
-modifyGame :: (GameState -> GameState) -> IO ()
+-- Modify the game
+modifyGame :: (GameDetails -> GameDetails) -> IO ()
 modifyGame  f = modifyIORef state f
 
 -- game functions
 totalCardsNeeded :: (Num a) => a -> a -> a
 totalCardsNeeded cs ps = cs * ps * 3
 
-divided :: (RealFrac a, Integral b) => a -> b
-divided cs = truncate $ cs / 52
-
 additional :: (Integral a, Num t) => a -> t
 additional cs | cs `mod` 52 > 0 = 1
        | otherwise       = 0  
 
 numDecksRequired :: (Integral t, Integral a) => a -> a -> t
-numDecksRequired cs ps = ( divided $ fromIntegral $ totalCardsNeeded cs ps ) + ( additional $ totalCardsNeeded cs ps )
+numDecksRequired cs ps = ( (\x -> truncate $ x / 52) $ fromIntegral $ totalCardsNeeded cs ps ) + ( additional $ totalCardsNeeded cs ps )
 
 getNewDeckWithEnoughCards :: Int -> [Card]
 getNewDeckWithEnoughCards 0 = []
@@ -91,58 +93,50 @@ jamesFaceDown = [Card Seven Clubs, Card Ten Diamonds]
 james = Player {name="James", hand=jamesHand, faceUp=jamesFaceUp, faceDown=jamesFaceDown}
 
 getGameInfo = do
-
     putStrLn "Enter number of players:"
     players <- fmap read getLine
-  
     putStrLn "Enter number of cards per hand:"
     cards <- fmap read getLine
 
-    newState <- readIORef state
-    putStrLn $ show newState
-
-    let decks = numDecksRequired cards players
-        newDeck = getNewDeckWithEnoughCards decks
-    putStrLn $ "Number of decks: " ++ show decks
-    
+    let newDeck = getNewDeckWithEnoughCards $ numDecksRequired cards players
     modifyGame $ \st ->
                     st { numPlayers     = players
                         ,numCardsEach   = cards
                         ,deck           = newDeck 
                        } 
 
-showDeck = do
-    putStrLn "Deck:"
-    print getNewDeck
-
-showPlayers = do 
-    print james
+getPlayerNames = do   
+    n <- getGameProperty numPlayers
+    playerNames <- forM [1..n] (\a -> do  
+        putStrLn $ "Enter name for player " ++ show a ++ ":"  
+        playerName <- getLine  
+        return playerName)  
+    modifyGame $ \st -> st { players = playerNames } 
 
 showGame = do
     game <- readIORef state
     putStrLn $ show game
 
+clearScreen = do
+    putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
 main = do
     startState <- readIORef state
-
-    putStrLn "Haskell head"
+    clearScreen
+    putStrLn "Welcome to Haskellhead!"
     putStrLn ""
-
     putStrLn $ show startState
     putStrLn ""
-
     getGameInfo
-
-    showDeck
-    showPlayers
-    
     putStrLn ""
-    
-    withGame $ \st -> do
-        case numCardsEach st > 3 of
-            True -> putStrLn "More than 3 cards"   
-            False -> putStrLn "Less than or 3 cards"
-            
+    getPlayerNames
+
+--    withGame $ \st -> do
+--        case numCardsEach st > 3 of
+--            True -> putStrLn "More than 3 cards"   
+--            False -> putStrLn "Less than or 3 cards"
     showGame
     
     
