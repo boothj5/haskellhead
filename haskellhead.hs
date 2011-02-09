@@ -43,6 +43,17 @@ state :: IORef GameState
 state = unsafePerformIO $ newIORef emptySt
 {-# NOINLINE state #-}
 
+-- Access a component of the state with a projection function
+getGameProperty :: (GameState -> a) -> IO a
+getGameProperty f = withGame (return . f)
+   
+-- Perform a (read-only) IO action on the state
+withGame :: (GameState -> IO a) -> IO a
+withGame f = readIORef state >>= f
+
+modifyGame :: (GameState -> GameState) -> IO ()
+modifyGame  f = modifyIORef state f
+
 -- game functions
 totalCardsNeeded :: (Num a) => a -> a -> a
 totalCardsNeeded cs ps = cs * ps * 3
@@ -95,6 +106,13 @@ showDeck = do
 showPlayers = do 
     print james
 
+showGame = do
+    getPlayers <- getGameProperty numPlayers
+    getCardsEach <- getGameProperty numCardsEach
+    
+    putStrLn $ "Number of players = " ++ show getPlayers
+    putStrLn $ "Number of cards each = " ++ show getCardsEach
+
 main = do
     startState <- readIORef state
 
@@ -108,6 +126,19 @@ main = do
 
     showDeck
     showPlayers
-
-
-
+    
+    putStrLn ""
+    
+    withGame $ \st -> do
+        case numCardsEach st > 3 of
+            True -> putStrLn "More than 3 cards"   
+            False -> putStrLn "Less than or 3 cards"
+            
+    showGame
+    
+    modifyGame $ \st ->
+                    st { numCardsEach = 0 }
+                    
+    showGame
+            
+            
