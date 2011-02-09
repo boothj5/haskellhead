@@ -208,19 +208,19 @@ main = do
     clearScreen
     putStrLn "Welcome to Haskellhead!"
     putStrLn ""
-    putStrLn $ show startState
-    putStrLn ""
     getGameInfo
     putStrLn ""
     getPlayerNames
+    deal
+    showGame
+
+
 
 --    withGame $ \st -> do
 --        case numCardsEach st > 3 of
 --            True -> putStrLn "More than 3 cards"   
 --            False -> putStrLn "Less than or 3 cards"
 
-    deal
-    showGame
 
 
             
