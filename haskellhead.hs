@@ -26,6 +26,8 @@ instance Show Player where
                                                            ++ "\nhand: " ++ show h
                                                            ++ "\nfaceUp: " ++ show u
                                                            ++ "\nfaceDown: " ++ show d
+instance Eq Player where
+    p1 == p2 = (name p1) == (name p2)
 
 -- Game state type
 data GameDetails = GameDetails {
@@ -54,11 +56,11 @@ emptySt = GameDetails {
        ,deck           = []
     }
 
--- Global state variable
+-- Global state variables
 state :: IORef GameDetails
 state = unsafePerformIO $ newIORef emptySt
 {-# NOINLINE state #-}
-
+   
 -- Access a component of the state with a projection function
 getGameProperty :: (GameDetails -> a) -> IO a
 getGameProperty f = withGame (return . f)
@@ -125,13 +127,21 @@ addToPlayersFaceDown p c = Player { name = ( name p )
                                     ,faceDown = ( c : (faceDown p) )
                                    }
 
-addToNamedPlayersHand :: String -> [Player] -> Card -> [Player]
+addToNamedPlayersHand :: Player -> [Player] -> Card -> [Player]
 addToNamedPlayersHand _ []     _ = []
-addToNamedPlayersHand n (p:ps) c | n == (name p) = (addToPlayersHand p c) : ps
-                                 | otherwise     = p : (addToNamedPlayersHand n ps c)
-                              
-    
--- addToNamedPlayersHand :: String -> [Player] -> Card -> [Player]
+addToNamedPlayersHand p1 (p2:ps) c | p1 == p2    = (addToPlayersHand p2 c) : ps
+                              | otherwise   = p2 : (addToNamedPlayersHand p1 ps c)
+
+addToNamedPlayersFaceUp :: Player -> [Player] -> Card -> [Player]
+addToNamedPlayersFaceUp _ []     _ = []
+addToNamedPlayersFaceUp p1 (p2:ps) c | p1 == p2    = (addToPlayersFaceUp p2 c) : ps
+                              | otherwise   = p2 : (addToNamedPlayersFaceUp p1 ps c)
+
+addToNamedPlayersFaceDown :: Player -> [Player] -> Card -> [Player]
+addToNamedPlayersFaceDown _ []     _ = []
+addToNamedPlayersFaceDown p1 (p2:ps) c | p1 == p2    = (addToPlayersFaceDown p2 c) : ps
+                              | otherwise   = p2 : (addToNamedPlayersFaceDown p1 ps c)
+
 
 getGameInfo = do
     putStrLn "Enter number of players:"
@@ -166,6 +176,33 @@ clearScreen = do
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
 
+deal = do
+    cardsEach  <- getGameProperty numCardsEach
+    playerList <- getGameProperty players
+    forM playerList (\p -> do
+        forM [1..cardsEach] (\_ -> do
+                   cardsToDeal <- getGameProperty deck
+                   innerPlayerList <- getGameProperty players
+                   let dealtPlayers = addToNamedPlayersHand p innerPlayerList (head cardsToDeal)
+                   modifyGame $ \st -> st { players = dealtPlayers
+                                           ,deck = (tail cardsToDeal) 
+                                          })
+        forM [1..cardsEach] (\_ -> do
+                   cardsToDeal <- getGameProperty deck
+                   innerPlayerList <- getGameProperty players
+                   let dealtPlayers = addToNamedPlayersFaceUp p innerPlayerList (head cardsToDeal)
+                   modifyGame $ \st -> st { players = dealtPlayers
+                                           ,deck = (tail cardsToDeal) 
+                                          })
+        forM [1..cardsEach] (\_ -> do
+                   cardsToDeal <- getGameProperty deck
+                   innerPlayerList <- getGameProperty players
+                   let dealtPlayers = addToNamedPlayersFaceDown p innerPlayerList (head cardsToDeal)
+                   modifyGame $ \st -> st { players = dealtPlayers
+                                           ,deck = (tail cardsToDeal) 
+                                          }))
+
+
 main = do
     startState <- readIORef state
     clearScreen
@@ -181,26 +218,9 @@ main = do
 --        case numCardsEach st > 3 of
 --            True -> putStrLn "More than 3 cards"   
 --            False -> putStrLn "Less than or 3 cards"
+
+    deal
     showGame
-    
-    putStrLn ""
-    putStrLn "Tested adding to hand"
-    
-    oPlayers <- getGameProperty players
-    
-    toDeal <- getGameProperty deck
-    
-    
-    let cardToDeal = head toDeal
-        rest = tail toDeal
-        nPlayers = addToNamedPlayersHand "James" oPlayers cardToDeal
-    
-    modifyGame $ \st ->
-                    st { players = nPlayers
-                        ,deck = rest 
-                       }
-    
-    showGame
-                    
-    
+
+
             
