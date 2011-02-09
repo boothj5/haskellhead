@@ -74,9 +74,9 @@ modifyGame  f = modifyIORef state f
 -- game functions
 numDecksRequired :: (Integral t, Integral a) => a -> a -> t
 numDecksRequired cs ps = ( div52 $ fromIntegral $ total cs ps ) + ( remDeck $ total cs ps )
-    where div52     = (\x -> truncate $ x / 52)
-          remDeck   = (\x -> if x `mod` 52 > 0 then 1 else 0 )
-          total     = (\x y -> x * y * 3)
+    where div52 n   = truncate $ n / 52
+          remDeck n = if n `mod` 52 > 0 then 1 else 0
+          total n m = n * m * 3
           
 getNewDeckWithEnoughCards :: Int -> [Card]
 getNewDeckWithEnoughCards 0 = []
