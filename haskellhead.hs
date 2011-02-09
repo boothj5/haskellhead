@@ -33,8 +33,18 @@ data GameDetails = GameDetails {
        ,players         :: ![String]
        ,numCardsEach    :: !Int
        ,deck            :: ![Card]
-    } deriving (Show)
+    } 
 
+instance Show GameDetails where
+    show GameDetails { numPlayers   = n
+                      ,players      = p
+                      ,numCardsEach = c
+                      ,deck         = d
+                     } =  "\nGame Details: " 
+                          ++ "\nPlayers: " ++ show n
+                          ++ "\nNames: " ++ show p
+                          ++ "\nCards Each: " ++ show c
+                          ++ "\nDeck : " ++ show d
 -- Initial state
 emptySt :: GameDetails
 emptySt = GameDetails {
