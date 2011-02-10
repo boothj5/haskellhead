@@ -3,24 +3,24 @@ import Control.Monad
 import Data.Char
 import Data.IORef
 
--- Card type
+------------------------------------------------
+
+--
+-- Data types
+--
+
 data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace 
             deriving (Show, Eq, Ord, Enum)
-
 data Suit = Hearts | Clubs | Diamonds | Spades deriving (Show, Eq)
-
 data Card = Card Rank Suit deriving (Eq)
-
 instance Show Card where
     show (Card rank suit) = show rank ++ " of " ++ show suit
 
--- player type
 data Player = Player { name :: String
                        , hand :: [Card]
                        , faceUp :: [Card]
                        , faceDown :: [Card] 
                      } 
-
 instance Show Player where
     show (Player {name=n, hand=h, faceUp=u, faceDown=d}) = "\nplayer name: " ++ n
                                                            ++ "\nhand: " ++ show h
@@ -29,14 +29,13 @@ instance Show Player where
 instance Eq Player where
     p1 == p2 = (name p1) == (name p2)
 
--- Game state type
+-- Used to represent the state of the game
 data GameDetails = GameDetails {
         numPlayers      :: !Int
        ,players         :: ![Player]
        ,numCardsEach    :: !Int
        ,deck            :: ![Card]
     } 
-
 instance Show GameDetails where
     show GameDetails { numPlayers   = n
                       ,players      = p
@@ -47,6 +46,13 @@ instance Show GameDetails where
                           ++ "\nPlayers details: " ++ show p
                           ++ "\nCards Each: " ++ show c
                           ++ "\nDeck : " ++ show d
+
+------------------------------------------------
+
+--
+-- Game state management
+--
+
 -- Initial state
 emptySt :: GameDetails
 emptySt = GameDetails {
@@ -73,38 +79,38 @@ withGame f = readIORef state >>= f
 modifyGame :: (GameDetails -> GameDetails) -> IO ()
 modifyGame  f = modifyIORef state f
 
+------------------------------------------------
+--
 -- game functions
+--
+
+-- determine the number of decks of cards required in game, 
+-- given number of players and number of cards per hand
 numDecksRequired :: (Integral t, Integral a) => a -> a -> t
 numDecksRequired cs ps = ( div52 $ fromIntegral $ total cs ps ) + ( remDeck $ total cs ps )
     where div52 n   = truncate $ n / 52
           remDeck n = if n `mod` 52 > 0 then 1 else 0
           total n m = n * m * 3
           
-getNewDeckWithEnoughCards :: Int -> [Card]
-getNewDeckWithEnoughCards 0 = []
-getNewDeckWithEnoughCards 1 = getNewDeck
-getNewDeckWithEnoughCards n = getNewDeck ++ (getNewDeckWithEnoughCards $ n-1)
+-- return a new unshuffled deck of cards
+newDeck :: [Card]
+newDeck = [Card rank suit | suit <- [Hearts, Clubs, Diamonds, Spades], rank <- [Two .. Ace]]
 
--- Some simple values
-getNewDeck :: [Card]
-getNewDeck = [Card rank suit | suit <- [Hearts, Clubs, Diamonds, Spades], rank <- [Two .. Ace]]
+-- returns a number of decks as one, i.e. with two decks, 
+-- every card will be represented twice
+newDeckWithEnoughCards :: Int -> [Card]
+newDeckWithEnoughCards 0 = []
+newDeckWithEnoughCards 1 = newDeck
+newDeckWithEnoughCards n = newDeck ++ (newDeckWithEnoughCards $ n-1)
 
-jamesHand :: [Card]
-jamesHand = [Card Three Diamonds, Card Two Hearts]
-
-jamesFaceUp :: [Card]
-jamesFaceUp = [Card Ace Spades, Card Four Hearts]
-
-jamesFaceDown :: [Card]
-jamesFaceDown = [Card Seven Clubs, Card Ten Diamonds]
-
-james = Player {name="James", hand=jamesHand, faceUp=jamesFaceUp, faceDown=jamesFaceDown}
-
+-- Given a list of names will return a list of players with those names
 createPlayers :: [String] -> [Player]
 createPlayers [] = []
 createPlayers (x:[]) = ( Player { name = x, hand = [], faceUp = [], faceDown = []} ) : []
 createPlayers (x:xs) = ( Player { name = x, hand = [], faceUp = [], faceDown = []} ) : createPlayers xs
 
+-- Given a player and a card, will return a new player, 
+-- with every thing the same but the Card added to one of their hands
 addToPlayersHand :: Player -> Card -> Player
 addToPlayersHand p c = Player { name = ( name p )
                                     ,hand = ( c : (hand p) )
@@ -126,7 +132,11 @@ addToPlayersFaceDown p c = Player { name = ( name p )
                                     ,faceUp = ( faceUp p )
                                     ,faceDown = ( c : (faceDown p) )
                                    }
-
+                                   
+-- Given a player, a list of players, and a card, returns
+-- a list of players with everything the same but the card
+-- added to one of the players hands, whos name matches that of the player 
+-- passed in
 addToNamedPlayersHand :: Player -> [Player] -> Card -> [Player]
 addToNamedPlayersHand _ []     _ = []
 addToNamedPlayersHand p1 (p2:ps) c | p1 == p2    = (addToPlayersHand p2 c) : ps
@@ -142,6 +152,11 @@ addToNamedPlayersFaceDown _ []     _ = []
 addToNamedPlayersFaceDown p1 (p2:ps) c | p1 == p2    = (addToPlayersFaceDown p2 c) : ps
                               | otherwise   = p2 : (addToNamedPlayersFaceDown p1 ps c)
 
+------------------------------------------------
+--
+-- IO Actions, either manipulate the game state,
+-- or interact with the user
+--
 
 getGameInfo = do
     putStrLn "Enter number of players:"
@@ -149,15 +164,16 @@ getGameInfo = do
     putStrLn "Enter number of cards per hand:"
     cards <- fmap read getLine
 
-    let newDeck = getNewDeckWithEnoughCards $ numDecksRequired cards players
+    let newDeck = newDeckWithEnoughCards $ numDecksRequired cards players
     modifyGame $ \st ->
                     st { numPlayers     = players
                         ,numCardsEach   = cards
                         ,deck           = newDeck 
-                       } 
-
+                       }
+                       
 getPlayerNames = do   
     n <- getGameProperty numPlayers
+    
     playerNames <- forM [1..n] (\a -> do  
         putStrLn $ "Enter name for player " ++ show a ++ ":"  
         playerName <- getLine  
@@ -175,10 +191,10 @@ clearScreen = do
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
-
 deal = do
     cardsEach  <- getGameProperty numCardsEach
     playerList <- getGameProperty players
+
     forM playerList (\p -> do
         forM [1..cardsEach] (\_ -> do
                    cardsToDeal <- getGameProperty deck
