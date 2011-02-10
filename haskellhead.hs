@@ -205,23 +205,23 @@ deal = do
 
     forM playerList (\p -> do
         forM [1..cardsEach] (\_ -> do
-                   cardsToDeal <- getGameProperty deck
-                   innerPlayerList <- getGameProperty players
-                   let dealtPlayers = addToNamedPlayersHand p innerPlayerList (head cardsToDeal)
-                   modifyGame $ \st -> st { players = dealtPlayers
-                                           ,deck = (tail cardsToDeal) })
+		  cardsToDeal <- getGameProperty deck
+		  innerPlayerList <- getGameProperty players
+                  let dealtPlayers = addToNamedPlayersHand p innerPlayerList (head cardsToDeal)
+                  modifyGame $ \st -> st { players = dealtPlayers
+                                          ,deck = (tail cardsToDeal) })
         forM [1..cardsEach] (\_ -> do
-                   cardsToDeal <- getGameProperty deck
-                   innerPlayerList <- getGameProperty players
-                   let dealtPlayers = addToNamedPlayersFaceUp p innerPlayerList (head cardsToDeal)
-                   modifyGame $ \st -> st { players = dealtPlayers
-                                           ,deck = (tail cardsToDeal) })
+		  cardsToDeal <- getGameProperty deck
+		  innerPlayerList <- getGameProperty players
+                  let dealtPlayers = addToNamedPlayersFaceUp p innerPlayerList (head cardsToDeal)
+                  modifyGame $ \st -> st { players = dealtPlayers
+                                          ,deck = (tail cardsToDeal) })
         forM [1..cardsEach] (\_ -> do
-                   cardsToDeal <- getGameProperty deck
-                   innerPlayerList <- getGameProperty players
-                   let dealtPlayers = addToNamedPlayersFaceDown p innerPlayerList (head cardsToDeal)
-                   modifyGame $ \st -> st { players = dealtPlayers
-                                           ,deck = (tail cardsToDeal) }))
+		  cardsToDeal <- getGameProperty deck
+		  innerPlayerList <- getGameProperty players
+                  let dealtPlayers = addToNamedPlayersFaceDown p innerPlayerList (head cardsToDeal)
+                  modifyGame $ \st -> st { players = dealtPlayers
+                                          ,deck = (tail cardsToDeal) }))
 
 main = do
     startState <- readIORef state
