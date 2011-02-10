@@ -16,11 +16,11 @@ data Card = Card Rank Suit deriving (Eq)
 instance Show Card where
     show (Card rank suit) = show rank ++ " of " ++ show suit
 
-data Player = Player { name :: String
-                       , hand :: [Card]
-                       , faceUp :: [Card]
-                       , faceDown :: [Card] 
-                     } 
+data Player = Player { 
+                name         :: String
+               ,hand         :: [Card]
+               ,faceUp       :: [Card]
+               ,faceDown     :: [Card] }
 instance Show Player where
     show (Player {name=n, hand=h, faceUp=u, faceDown=d}) = "\nplayer name: " ++ n
                                                            ++ "\nhand: " ++ show h
@@ -30,18 +30,16 @@ instance Eq Player where
     p1 == p2 = (name p1) == (name p2)
 
 -- Used to represent the state of the game
-data GameDetails = GameDetails {
-        numPlayers      :: !Int
-       ,players         :: ![Player]
-       ,numCardsEach    :: !Int
-       ,deck            :: ![Card]
-    } 
+data GameDetails = GameDetails { numPlayers      :: !Int
+                                ,players         :: ![Player]
+                                ,numCardsEach    :: !Int
+                                ,deck            :: ![Card]
+                               } 
 instance Show GameDetails where
     show GameDetails { numPlayers   = n
                       ,players      = p
                       ,numCardsEach = c
-                      ,deck         = d
-                     } =  "\nGame Details: " 
+                      ,deck         = d } =  "\nGame Details: " 
                           ++ "\nPlayers: " ++ show n
                           ++ "\nPlayers details: " ++ show p
                           ++ "\nCards Each: " ++ show c
@@ -55,12 +53,10 @@ instance Show GameDetails where
 
 -- Initial state
 emptySt :: GameDetails
-emptySt = GameDetails {
-        numPlayers      = 0
-       ,players         = []
-       ,numCardsEach    = 0
-       ,deck           = []
-    }
+emptySt = GameDetails { numPlayers      = 0
+                       ,players         = []
+                       ,numCardsEach    = 0
+                       ,deck            = [] }
 
 -- Global state variables
 state :: IORef GameDetails
@@ -112,51 +108,69 @@ createPlayers (x:xs) = ( Player { name = x, hand = [], faceUp = [], faceDown = [
 -- Given a player and a card, will return a new player, 
 -- with every thing the same but the Card added to one of their hands
 addToPlayersHand :: Player -> Card -> Player
-addToPlayersHand p c = Player { name = ( name p )
-                                    ,hand = ( c : (hand p) )
-                                    ,faceUp = ( faceUp p )
-                                    ,faceDown = ( faceDown p )
-                                   }
+addToPlayersHand p c = Player { name        = ( name p )
+                               ,hand        = ( c : (hand p) )
+                               ,faceUp      = ( faceUp p )
+                               ,faceDown    = ( faceDown p ) }
 
 addToPlayersFaceUp :: Player -> Card -> Player
-addToPlayersFaceUp p c = Player { name = ( name p )
-                                    ,hand = ( hand p )
-                                    ,faceUp = ( c : (faceUp p) )
-                                    ,faceDown = ( faceDown p )
-                                   }
+addToPlayersFaceUp p c = Player { name      = ( name p )
+                                 ,hand      = ( hand p )
+                                 ,faceUp    = ( c : (faceUp p) )
+                                 ,faceDown  = ( faceDown p ) }
 
 
 addToPlayersFaceDown :: Player -> Card -> Player
-addToPlayersFaceDown p c = Player { name = ( name p )
-                                    ,hand = ( hand p )
-                                    ,faceUp = ( faceUp p )
-                                    ,faceDown = ( c : (faceDown p) )
-                                   }
+addToPlayersFaceDown p c = Player { name        = ( name p )
+                                   ,hand        = ( hand p )
+                                   ,faceUp      = ( faceUp p )
+                                   ,faceDown    = ( c : (faceDown p) ) }
                                    
 -- Given a player, a list of players, and a card, returns
 -- a list of players with everything the same but the card
 -- added to one of the players hands, whos name matches that of the player 
 -- passed in
 addToNamedPlayersHand :: Player -> [Player] -> Card -> [Player]
-addToNamedPlayersHand _ []     _ = []
+addToNamedPlayersHand _ []     _   = []
 addToNamedPlayersHand p1 (p2:ps) c | p1 == p2    = (addToPlayersHand p2 c) : ps
-                              | otherwise   = p2 : (addToNamedPlayersHand p1 ps c)
+                                   | otherwise   = p2 : (addToNamedPlayersHand p1 ps c)
 
 addToNamedPlayersFaceUp :: Player -> [Player] -> Card -> [Player]
-addToNamedPlayersFaceUp _ []     _ = []
+addToNamedPlayersFaceUp _ []     _   = []
 addToNamedPlayersFaceUp p1 (p2:ps) c | p1 == p2    = (addToPlayersFaceUp p2 c) : ps
-                              | otherwise   = p2 : (addToNamedPlayersFaceUp p1 ps c)
+                                     | otherwise   = p2 : (addToNamedPlayersFaceUp p1 ps c)
 
 addToNamedPlayersFaceDown :: Player -> [Player] -> Card -> [Player]
-addToNamedPlayersFaceDown _ []     _ = []
+addToNamedPlayersFaceDown _ []     _   = []
 addToNamedPlayersFaceDown p1 (p2:ps) c | p1 == p2    = (addToPlayersFaceDown p2 c) : ps
-                              | otherwise   = p2 : (addToNamedPlayersFaceDown p1 ps c)
+                                       | otherwise   = p2 : (addToNamedPlayersFaceDown p1 ps c)
 
+swapHandWithFaceUp :: Player -> Int -> Int -> Player
+swapHandWithFaceUp p h f = Player { name     = ( name p )
+                                   ,hand     = (map (\c -> if (handCard == c) then faceUpCard else c) (hand p))
+                                   ,faceUp   = (map (\c -> if (faceUpCard == c) then handCard else c) (faceUp p))
+                                   ,faceDown = ( faceDown p ) }
+    where handCard   = (hand p) !! h
+          faceUpCard = (faceUp p) !! f
+          
+swapForNamedPlayer :: Player -> [Player] -> Int -> Int -> [Player]
+swapForNamedPlayer p1 (p2:ps) h f | p1 == p2  = (swapHandWithFaceUp p2 h f) : ps
+                                  | otherwise = p2 : (swapForNamedPlayer p1 ps h f)
+   
 ------------------------------------------------
 --
 -- IO Actions, either manipulate the game state,
 -- or interact with the user
 --
+
+clearScreen = do
+    putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
+showGame = do
+    game <- readIORef state
+    putStrLn $ show game
 
 getGameInfo = do
     putStrLn "Enter number of players:"
@@ -168,8 +182,7 @@ getGameInfo = do
     modifyGame $ \st ->
                     st { numPlayers     = players
                         ,numCardsEach   = cards
-                        ,deck           = newDeck 
-                       }
+                        ,deck           = newDeck }
                        
 getPlayerNames = do   
     n <- getGameProperty numPlayers
@@ -182,15 +195,6 @@ getPlayerNames = do
     let newPlayers = createPlayers playerNames 
     modifyGame $ \st -> st { players = newPlayers } 
 
-showGame = do
-    game <- readIORef state
-    putStrLn $ show game
-
-clearScreen = do
-    putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-    putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-    putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-
 deal = do
     cardsEach  <- getGameProperty numCardsEach
     playerList <- getGameProperty players
@@ -201,23 +205,19 @@ deal = do
                    innerPlayerList <- getGameProperty players
                    let dealtPlayers = addToNamedPlayersHand p innerPlayerList (head cardsToDeal)
                    modifyGame $ \st -> st { players = dealtPlayers
-                                           ,deck = (tail cardsToDeal) 
-                                          })
+                                           ,deck = (tail cardsToDeal) })
         forM [1..cardsEach] (\_ -> do
                    cardsToDeal <- getGameProperty deck
                    innerPlayerList <- getGameProperty players
                    let dealtPlayers = addToNamedPlayersFaceUp p innerPlayerList (head cardsToDeal)
                    modifyGame $ \st -> st { players = dealtPlayers
-                                           ,deck = (tail cardsToDeal) 
-                                          })
+                                           ,deck = (tail cardsToDeal) })
         forM [1..cardsEach] (\_ -> do
                    cardsToDeal <- getGameProperty deck
                    innerPlayerList <- getGameProperty players
                    let dealtPlayers = addToNamedPlayersFaceDown p innerPlayerList (head cardsToDeal)
                    modifyGame $ \st -> st { players = dealtPlayers
-                                           ,deck = (tail cardsToDeal) 
-                                          }))
-
+                                           ,deck = (tail cardsToDeal) }))
 
 main = do
     startState <- readIORef state
@@ -229,7 +229,24 @@ main = do
     getPlayerNames
     deal
     showGame
+    
+    playerList <- getGameProperty players
 
+    let playerToSwap = playerList !! 0
+        theName = name playerToSwap
+    
+    putStrLn $ theName ++ ", select a hand card to swap:"
+    handCardToSwap   <- fmap read getLine
+    putStrLn $ theName ++ ", select a face up card to swap:"
+    faceUpCardToSwap <- fmap read getLine
+    
+    let swappedPlayers = swapForNamedPlayer playerToSwap playerList handCardToSwap faceUpCardToSwap
+            
+    modifyGame $ \st -> st { players = swappedPlayers }
+            
+            
+    showGame
+    
 
 
 --    withGame $ \st -> do
