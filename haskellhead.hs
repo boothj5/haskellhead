@@ -156,7 +156,11 @@ swapHandWithFaceUp p h f = Player { name     = ( name p )
 swapForNamedPlayer :: Player -> [Player] -> Int -> Int -> [Player]
 swapForNamedPlayer p1 (p2:ps) h f | p1 == p2  = (swapHandWithFaceUp p2 h f) : ps
                                   | otherwise = p2 : (swapForNamedPlayer p1 ps h f)
-   
+
+charToBoolean :: String -> Bool
+charToBoolean s | (toUpper $ s !! 0) == 'Y'= True
+		| otherwise 	    	   = False
+		
 ------------------------------------------------
 --
 -- IO Actions, either manipulate the game state,
@@ -234,17 +238,21 @@ main = do
 
     let playerToSwap = playerList !! 0
         theName = name playerToSwap
+
+    putStrLn $ theName ++ ", do you want to swap cards?"
+    swap <- getLine
+
+    case (charToBoolean swap) of
+      True -> do
+	putStrLn $ theName ++ ", select a hand card to swap:"
+	handCardToSwap   <- fmap read getLine
+	putStrLn $ theName ++ ", select a face up card to swap:"
+	faceUpCardToSwap <- fmap read getLine
     
-    putStrLn $ theName ++ ", select a hand card to swap:"
-    handCardToSwap   <- fmap read getLine
-    putStrLn $ theName ++ ", select a face up card to swap:"
-    faceUpCardToSwap <- fmap read getLine
-    
-    let swappedPlayers = swapForNamedPlayer playerToSwap playerList handCardToSwap faceUpCardToSwap
-            
-    modifyGame $ \st -> st { players = swappedPlayers }
-            
-            
+	let swappedPlayers = swapForNamedPlayer playerToSwap playerList (handCardToSwap-1) (faceUpCardToSwap-1)
+	modifyGame $ \st -> st { players = swappedPlayers }
+	return ()
+      False -> do return ()
     showGame
     
 
