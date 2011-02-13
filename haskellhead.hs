@@ -34,15 +34,19 @@ data GameDetails = GameDetails { numPlayers      :: !Int
                                 ,players         :: ![Player]
                                 ,numCardsEach    :: !Int
                                 ,deck            :: ![Card]
+                                ,turn            :: !Int
                                } 
 instance Show GameDetails where
     show GameDetails { numPlayers   = n
                       ,players      = p
                       ,numCardsEach = c
-                      ,deck         = d } =  "\nGame Details: " 
+                      ,deck         = d
+                      ,turn         = t } =  "\nGame Details: " 
                           ++ "\nPlayers: " ++ show n
-                          ++ "\nPlayers details: " ++ show p
                           ++ "\nCards Each: " ++ show c
+                          ++ "\n"
+                          ++ "\nPlayers details: " ++ show p
+                          ++ "\n" 
                           ++ "\nDeck : " ++ show d
 
 ------------------------------------------------
@@ -56,7 +60,8 @@ emptySt :: GameDetails
 emptySt = GameDetails { numPlayers      = 0
                        ,players         = []
                        ,numCardsEach    = 0
-                       ,deck            = [] }
+                       ,deck            = [] 
+                       ,turn            = 0}
 
 -- Global state variables
 state :: IORef GameDetails
@@ -232,27 +237,32 @@ main = do
     putStrLn ""
     getPlayerNames
     deal
+    clearScreen
     showGame
+    putStrLn ""
+    putStrLn "Press enter to continue"
+    getLine
     
     playerList <- getGameProperty players
 
-    let playerToSwap = playerList !! 0
-        theName = name playerToSwap
+    forM playerList (\p -> do
+        let theName = name p
 
-    putStrLn $ theName ++ ", do you want to swap cards?"
-    swap <- getLine
+        putStrLn $ theName ++ ", do you want to swap cards?"
+        swap <- getLine
 
-    case (charToBoolean swap) of
-      True -> do
-	putStrLn $ theName ++ ", select a hand card to swap:"
-	handCardToSwap   <- fmap read getLine
-	putStrLn $ theName ++ ", select a face up card to swap:"
-	faceUpCardToSwap <- fmap read getLine
+        case (charToBoolean swap) of
+            True -> do
+	            putStrLn $ theName ++ ", select a hand card to swap:"
+	            handCardToSwap   <- fmap read getLine
+	            putStrLn $ theName ++ ", select a face up card to swap:"
+	            faceUpCardToSwap <- fmap read getLine
     
-	let swappedPlayers = swapForNamedPlayer playerToSwap playerList (handCardToSwap-1) (faceUpCardToSwap-1)
-	modifyGame $ \st -> st { players = swappedPlayers }
-	return ()
-      False -> do return ()
+	            let swappedPlayers = swapForNamedPlayer p playerList (handCardToSwap-1) (faceUpCardToSwap-1)
+	            modifyGame $ \st -> st { players = swappedPlayers }
+	            return ()
+            False -> do return ())
+
     showGame
     
 
