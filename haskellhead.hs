@@ -11,8 +11,8 @@ import Data.IORef
 
 data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace 
             deriving (Show, Eq, Ord, Enum)
-data Suit = Hearts | Clubs | Diamonds | Spades deriving (Show, Eq)
-data Card = Card Rank Suit deriving (Eq)
+data Suit = Hearts | Clubs | Diamonds | Spades deriving (Show, Eq, Ord)
+data Card = Card Rank Suit deriving (Eq, Ord)
 instance Show Card where
     show (Card rank suit) = show rank ++ " of " ++ show suit
 
@@ -34,20 +34,21 @@ data GameDetails = GameDetails { numPlayers      :: !Int
                                 ,players         :: ![Player]
                                 ,numCardsEach    :: !Int
                                 ,deck            :: ![Card]
-                                ,turn            :: !Int
+                                ,pile            :: ![Card]
                                } 
 instance Show GameDetails where
     show GameDetails { numPlayers   = n
                       ,players      = p
                       ,numCardsEach = c
-                      ,deck         = d
-                      ,turn         = t } =  "\nGame Details: " 
+                      ,deck         = d 
+                      ,pile         = pile } =  "\nGame Details: " 
                           ++ "\nPlayers: " ++ show n
                           ++ "\nCards Each: " ++ show c
                           ++ "\n"
                           ++ "\nPlayers details: " ++ show p
                           ++ "\n" 
                           ++ "\nDeck : " ++ show d
+                          ++ "\nPile : " ++ show pile
 
 ------------------------------------------------
 
@@ -61,7 +62,7 @@ emptySt = GameDetails { numPlayers      = 0
                        ,players         = []
                        ,numCardsEach    = 0
                        ,deck            = [] 
-                       ,turn            = 0}
+                       ,pile            = [] }
 
 -- Global state variables
 state :: IORef GameDetails
@@ -166,6 +167,20 @@ charToBoolean :: String -> Bool
 charToBoolean s | (toUpper $ s !! 0) == 'Y'= True
 		| otherwise 	    	   = False
 		
+playerWithLowestCard :: Player -> Player -> Player
+playerWithLowestCard p1 p2 = if ((min p1Min p2Min) == p1Min) then p1 else p2
+    where p1Min = minimum $ hand p1
+          p2Min = minimum $ hand p2
+
+playerWithLowestCardFromList :: [Player] -> Player
+playerWithLowestCardFromList [] = error "No players"
+playerWithLowestCardFromList (player:[]) = player
+playerWithLowestCardFromList (player:rest) = playerWithLowestCard player (playerWithLowestCardFromList rest)
+
+getLowestCards :: Player -> [Card]
+getLowestCards p = (minimum $ hand p) : []
+
+
 ------------------------------------------------
 --
 -- IO Actions, either manipulate the game state,
@@ -263,6 +278,25 @@ swapAll = do
             else 
                 return ())
 
+
+playCards p cs = do
+    oPile <- getGameProperty pile
+    
+    let newPile = cs ++ oPile
+        -- newDeck = filter (\c -> if (c elem cs) then True else False) oDeck
+
+    
+    modifyGame $ \st -> 
+                    st { pile = newPile }
+    
+firstMove = do
+    playerList <- getGameProperty players
+
+    let player = playerWithLowestCardFromList playerList
+        cardsToPlay = getLowestCards player
+    
+    playCards playerWithLowestCard cardsToPlay
+
 main = do
     startState <- readIORef state
     clearScreen
@@ -278,6 +312,8 @@ main = do
     putStrLn "Press enter to continue"
     getLine
     swapAll
+    firstMove
+
     showGame
     
 
