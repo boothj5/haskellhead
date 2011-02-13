@@ -228,21 +228,7 @@ deal = do
                   modifyGame $ \st -> st { players = dealtPlayers
                                           ,deck = (tail cardsToDeal) }))
 
-main = do
-    startState <- readIORef state
-    clearScreen
-    putStrLn "Welcome to Haskellhead!"
-    putStrLn ""
-    getGameInfo
-    putStrLn ""
-    getPlayerNames
-    deal
-    clearScreen
-    showGame
-    putStrLn ""
-    putStrLn "Press enter to continue"
-    getLine
-    
+swapAll = do
     playerList <- getGameProperty players
 
     forM playerList (\p -> do
@@ -263,6 +249,21 @@ main = do
 	            return ()
             False -> do return ())
 
+main = do
+    startState <- readIORef state
+    clearScreen
+    putStrLn "Welcome to Haskellhead!"
+    putStrLn ""
+    getGameInfo
+    putStrLn ""
+    getPlayerNames
+    deal
+    clearScreen
+    showGame
+    putStrLn ""
+    putStrLn "Press enter to continue"
+    getLine
+    swapAll
     showGame
     
 
