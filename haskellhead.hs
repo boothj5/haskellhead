@@ -228,6 +228,26 @@ deal = do
                   modifyGame $ \st -> st { players = dealtPlayers
                                           ,deck = (tail cardsToDeal) }))
 
+doSwap playerList p = do
+    let theName = name p
+    putStrLn $ theName ++ ", select a hand card to swap:"
+    handCardToSwap   <- fmap read getLine
+    putStrLn $ theName ++ ", select a face up card to swap:"
+    faceUpCardToSwap <- fmap read getLine
+
+    let swappedPlayers = swapForNamedPlayer p playerList (handCardToSwap-1) (faceUpCardToSwap-1)
+    modifyGame $ \st -> st { players = swappedPlayers }
+
+    putStrLn $ theName ++ ", do you want to swap more cards?"
+    swapMore <- getLine
+
+    if (charToBoolean swapMore) 
+        then
+            doSwap playerList p
+        else 
+            return ()
+
+
 swapAll = do
     playerList <- getGameProperty players
 
@@ -237,17 +257,11 @@ swapAll = do
         putStrLn $ theName ++ ", do you want to swap cards?"
         swap <- getLine
 
-        case (charToBoolean swap) of
-            True -> do
-	            putStrLn $ theName ++ ", select a hand card to swap:"
-	            handCardToSwap   <- fmap read getLine
-	            putStrLn $ theName ++ ", select a face up card to swap:"
-	            faceUpCardToSwap <- fmap read getLine
-    
-	            let swappedPlayers = swapForNamedPlayer p playerList (handCardToSwap-1) (faceUpCardToSwap-1)
-	            modifyGame $ \st -> st { players = swappedPlayers }
-	            return ()
-            False -> do return ())
+        if (charToBoolean swap) 
+            then 
+                doSwap playerList p
+            else 
+                return ())
 
 main = do
     startState <- readIORef state
