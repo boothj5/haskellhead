@@ -231,29 +231,36 @@ getPlayerNames = do
     let newPlayers = createPlayers playerNames 
     modifyGame $ \st -> st { players = newPlayers } 
 
+dealToHand p = do
+    cs <- getGameProperty deck
+    ps <- getGameProperty players
+
+    let dealtPs = addToNamedPlayersHand p ps (head cs)
+    modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
+
+dealToFaceUp p = do
+    cs <- getGameProperty deck
+    ps <- getGameProperty players
+
+    let dealtPs = addToNamedPlayersFaceUp p ps (head cs)
+    modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
+
+dealToFaceDown p = do
+    cs <- getGameProperty deck
+    ps <- getGameProperty players
+
+    let dealtPs = addToNamedPlayersFaceDown p ps (head cs)
+    modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
+
 deal = do
     cardsEach  <- getGameProperty numCardsEach
     playerList <- getGameProperty players
 
     forM playerList (\p -> do
         forM [1..cardsEach] (\_ -> do
-		  cardsToDeal <- getGameProperty deck
-		  innerPlayerList <- getGameProperty players
-                  let dealtPlayers = addToNamedPlayersHand p innerPlayerList (head cardsToDeal)
-                  modifyGame $ \st -> st { players = dealtPlayers
-                                          ,deck = (tail cardsToDeal) })
-        forM [1..cardsEach] (\_ -> do
-		  cardsToDeal <- getGameProperty deck
-		  innerPlayerList <- getGameProperty players
-                  let dealtPlayers = addToNamedPlayersFaceUp p innerPlayerList (head cardsToDeal)
-                  modifyGame $ \st -> st { players = dealtPlayers
-                                          ,deck = (tail cardsToDeal) })
-        forM [1..cardsEach] (\_ -> do
-		  cardsToDeal <- getGameProperty deck
-		  innerPlayerList <- getGameProperty players
-                  let dealtPlayers = addToNamedPlayersFaceDown p innerPlayerList (head cardsToDeal)
-                  modifyGame $ \st -> st { players = dealtPlayers
-                                          ,deck = (tail cardsToDeal) }))
+            dealToFaceDown p
+            dealToFaceUp p 
+            dealToHand p ))
 
 doSwap playerList p = do
     let theName = name p
@@ -302,26 +309,29 @@ firstMove = do
     modifyGame $ \st -> 
                     st { pile    = nPile 
                         ,players = nPlayerList }
+    dealToHand p
 
-    
-
- 
 
 main = do
-    startState <- readIORef state
     clearScreen
     putStrLn "Welcome to Haskellhead!"
     putStrLn ""
+
     getGameInfo
     putStrLn ""
+
     getPlayerNames
+
     deal
+
     clearScreen
     showGame
     putStrLn ""
     putStrLn "Press enter to continue"
     getLine
+
     swapAll
+
     firstMove
 
     showGame
