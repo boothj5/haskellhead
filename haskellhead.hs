@@ -180,6 +180,18 @@ playerWithLowestCardFromList (player:rest) = playerWithLowestCard player (player
 getLowestCards :: Player -> [Card]
 getLowestCards p = (minimum $ hand p) : []
 
+removeFromPlayersHand :: Player -> [Card] -> Player
+removeFromPlayersHand p [] = p
+removeFromPlayersHand p cs = Player { name = ( name p )
+                                     ,hand = ( filter (\c -> c `notElem` cs) $ hand p )
+                                     ,faceUp = ( faceUp p )
+                                     ,faceDown = ( faceDown p ) }
+
+removeFromNamedPlayersHand :: Player -> [Player] -> [Card] -> [Player]
+removeFromNamedPlayersHand _ [] _        = []
+removeFromNamedPlayersHand _ ps []       = ps
+removeFromNamedPlayersHand p1 (p2:ps) cs | p1 == p2  = (removeFromPlayersHand p2 cs) : ps
+                                         | otherwise = p2 : (removeFromNamedPlayersHand p1 ps cs)
 
 ------------------------------------------------
 --
@@ -277,25 +289,23 @@ swapAll = do
                 doSwap playerList p
             else 
                 return ())
-
-
-playCards p cs = do
-    oPile <- getGameProperty pile
-    
-    let newPile = cs ++ oPile
-        -- newDeck = filter (\c -> if (c elem cs) then True else False) oDeck
-
-    
-    modifyGame $ \st -> 
-                    st { pile = newPile }
-    
+   
 firstMove = do
     playerList <- getGameProperty players
+    oPile <- getGameProperty pile
 
-    let player = playerWithLowestCardFromList playerList
-        cardsToPlay = getLowestCards player
+    let p = playerWithLowestCardFromList playerList
+        cs = getLowestCards p    
+        nPile = cs ++ oPile
+        nPlayerList = removeFromNamedPlayersHand p playerList cs
+
+    modifyGame $ \st -> 
+                    st { pile    = nPile 
+                        ,players = nPlayerList }
+
     
-    playCards playerWithLowestCard cardsToPlay
+
+ 
 
 main = do
     startState <- readIORef state
