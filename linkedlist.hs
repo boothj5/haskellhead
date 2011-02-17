@@ -42,6 +42,11 @@ instance (Ord a) => Monoid (CombList a) where
 instance F.Foldable LinkedList where
     foldMap f EmptyList = mempty
     foldMap f (Node n rest) = f n `mappend` F.foldMap f rest
+
+instance Monad LinkedList where
+   return x = Node x EmptyList
+   list >>= f = listConcatAll $ fmap f list
+   fail _ = EmptyList
     
 -- LinkedList functions
 listInsert :: (Ord a) => a -> LinkedList a -> LinkedList a
@@ -65,10 +70,33 @@ listRemove _ EmptyList          = EmptyList
 listRemove 0 (Node n rest)      = rest
 listRemove index (Node n rest)  = Node n (listRemove (index -1) rest)
 
+listConcat :: LinkedList a -> LinkedList a -> LinkedList a
+listConcat EmptyList l = l
+listConcat l EmptyList = l
+listConcat (Node n1 r2) l2 = Node n1 (listConcat r2 l2)
+
+listConcatAll :: LinkedList (LinkedList a) -> LinkedList a
+listConcatAll EmptyList = EmptyList
+listConcatAll (Node list1 EmptyList) = list1
+listConcatAll (Node list1 (Node list2 rest)) = listConcatAll (Node (listConcat list1 list2) rest)
+
+fromPrimitive :: [a] -> LinkedList a
+fromPrimitive [] = EmptyList
+fromPrimitive (x:[]) = Node x EmptyList
+fromPrimitive (x:xs) = Node x (fromPrimitive xs)
+
+toPrimitive :: LinkedList a -> [a]
+toPrimitive EmptyList = []
+toPrimitive (Node x EmptyList) = x:[]
+toPrimitive (Node x xs) = x:(toPrimitive xs)
+
 -- Tests
 myList = Node 1 (Node 2 (Node 3 (Node 4 (Node 5 (Node 6 (Node 7 (Node 8 (Node 9 (Node 10 EmptyList)))))))))
 
 newList = fmap (\value -> value * 100) myList
+
+list1To10 = myList
+list10To100 = fmap (*10) list1To10
 
 biggerThan2 = fmap (>2) myList
 
@@ -101,6 +129,19 @@ combined = getCombList $ CombList comb1 `mappend` CombList comb2
 added = F.foldl (+) 0 myList
 
 treeList = Node comb1 (Node comb2 (Node myList EmptyList))
+
+multiplyAllElements :: (Num a) => LinkedList a -> LinkedList a -> LinkedList a
+multiplyAllElements list1 list2 = list1 >>= (\x -> 
+                                  list2 >>= (\y -> 
+                                  Node (x*y) EmptyList))
+
+multiplyAllElementsDo :: (Num a) => LinkedList a -> LinkedList a -> LinkedList a
+multiplyAllElementsDo list1 list2 = do
+    x <- list1
+    y <- list2
+    Node (x*y) EmptyList
+    
+
 
 
 main = do
