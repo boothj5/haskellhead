@@ -214,7 +214,7 @@ getGameInfo = do
     putStrLn "Enter number of cards per hand:"
     cards <- fmap read getLine
 
-    let newDeck = newDeckWithEnoughCards $ numDecksRequired cards players
+    newDeck <- return $ newDeckWithEnoughCards $ numDecksRequired cards players
     modifyGame $ \st ->
                     st { numPlayers     = players
                         ,numCardsEach   = cards
@@ -228,28 +228,28 @@ getPlayerNames = do
         playerName <- getLine  
         return playerName)  
     
-    let newPlayers = createPlayers playerNames 
+    newPlayers <- return $ createPlayers playerNames 
     modifyGame $ \st -> st { players = newPlayers } 
 
 dealToHand p = do
     cs <- getGameProperty deck
     ps <- getGameProperty players
 
-    let dealtPs = addToNamedPlayersHand p ps (head cs)
+    dealtPs <- return $ addToNamedPlayersHand p ps (head cs)
     modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
 
 dealToFaceUp p = do
     cs <- getGameProperty deck
     ps <- getGameProperty players
 
-    let dealtPs = addToNamedPlayersFaceUp p ps (head cs)
+    dealtPs <- return $ addToNamedPlayersFaceUp p ps (head cs)
     modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
 
 dealToFaceDown p = do
     cs <- getGameProperty deck
     ps <- getGameProperty players
 
-    let dealtPs = addToNamedPlayersFaceDown p ps (head cs)
+    dealtPs <- return $ addToNamedPlayersFaceDown p ps (head cs)
     modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
 
 deal = do
@@ -263,13 +263,13 @@ deal = do
             dealToHand p ))
 
 doSwap playerList p = do
-    let theName = name p
+    theName <- return $ name p
     putStrLn $ theName ++ ", select a hand card to swap:"
     handCardToSwap   <- fmap read getLine
     putStrLn $ theName ++ ", select a face up card to swap:"
     faceUpCardToSwap <- fmap read getLine
 
-    let swappedPlayers = swapForNamedPlayer p playerList (handCardToSwap-1) (faceUpCardToSwap-1)
+    swappedPlayers <- return $ swapForNamedPlayer p playerList (handCardToSwap-1) (faceUpCardToSwap-1)
     modifyGame $ \st -> st { players = swappedPlayers }
 
     putStrLn $ theName ++ ", do you want to swap more cards?"
@@ -286,7 +286,7 @@ swapAll = do
     playerList <- getGameProperty players
 
     forM playerList (\p -> do
-        let theName = name p
+        theName <- return $ name p
 
         putStrLn $ theName ++ ", do you want to swap cards?"
         swap <- getLine
@@ -301,10 +301,10 @@ firstMove = do
     playerList <- getGameProperty players
     oPile <- getGameProperty pile
 
-    let p = playerWithLowestCardFromList playerList
-        cs = getLowestCards p    
-        nPile = cs ++ oPile
-        nPlayerList = removeFromNamedPlayersHand p playerList cs
+    p <- return $ playerWithLowestCardFromList playerList
+    cs <- return $ getLowestCards p    
+    nPile <- return $ cs ++ oPile
+    nPlayerList <- return $ removeFromNamedPlayersHand p playerList cs
 
     modifyGame $ \st -> 
                     st { pile    = nPile 
