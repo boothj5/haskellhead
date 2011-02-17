@@ -25,5 +25,41 @@ myFuncOnJames j1 j2 j3 = do
     z <- j3
     James $ myFunction x y z
 
+main1 = 
+    getLine >>= (\first -> 
+    putStrLn ("first thing was: " ++ first) >>= (\_ -> 
+    getLine >>= (\line -> 
+    putStrLn ("you said: " ++ line) >>= (\_ ->
+    fmap read getLine >>= (\number ->
+    if number > 10 then putStrLn ("Bigger") else putStrLn ("Smaller"))))))
+
+main2 = 
+    getLine >>= (\first -> 
+    putStrLn ("first thing was: " ++ first) >> ( 
+    getLine >>= (\line -> 
+    putStrLn ("you said: " ++ line) >> (
+    fmap read getLine >>= (\number ->
+    if number > 10 then putStrLn ("Bigger") else putStrLn ("Smaller"))))))
+
+main3 = 
+    getLine >>= \first -> 
+    putStrLn ("first thing was: " ++ first) >>  
+    getLine >>= \line -> 
+    putStrLn ("you said: " ++ line) >> 
+    fmap read getLine >>= \number ->
+    if number > 10 then putStrLn ("Bigger") else putStrLn ("Smaller")
+
+main4 = do
+    first <- getLine
+    putStrLn ("first thing was: " ++ first)
+    line <- getLine
+    putStrLn ("you said: " ++ line)
+    number <- fmap read getLine
+    if number > 10
+        then 
+            putStrLn ("Bigger")
+        else
+            putStrLn ("Smaller")
+        
 
 
