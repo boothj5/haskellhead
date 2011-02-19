@@ -1,29 +1,36 @@
 import Control.Applicative
+import Data.Monoid
 
-data JamesContext a = James a
+data SomethingContext a = Something a
     deriving (Show)
 
-instance Functor JamesContext where
-    fmap f (James x) = James (f x)
+instance Functor SomethingContext where
+    fmap f (Something x) = Something (f x)
 
-instance Applicative JamesContext where
-    pure x = James x
-    (James f) <*> (James x) = James (f x)
+instance Applicative SomethingContext where
+    pure x = Something x
+    (Something f) <*> (Something x) = Something (f x)
 
-instance Monad JamesContext where
-    return x = James x
-    James x >>= f = f x
+instance Num a => Monoid (SomethingContext a) where
+    mempty = Something 0
+    mappend j1 j2 = addSomething j1 j2
+
+instance Monad SomethingContext where
+    return x = Something x
+    Something x >>= f = f x
+
+addSomething :: (Num a) => SomethingContext a -> SomethingContext a -> SomethingContext a
+addSomething (Something x) (Something y) = Something (x + y)
 
 myFunction :: (Num n) => n -> n -> n -> n
 myFunction x y z = x * y + z
 
-
-myFuncOnJames :: (Num n) => JamesContext n -> JamesContext n -> JamesContext n -> JamesContext n
-myFuncOnJames j1 j2 j3 = do
+myFuncOnSomething :: (Num n) => SomethingContext n -> SomethingContext n -> SomethingContext n -> SomethingContext n
+myFuncOnSomething j1 j2 j3 = do
     x <- j1
     y <- j2
     z <- j3
-    James $ myFunction x y z
+    Something $ myFunction x y z
 
 main1 = 
     getLine >>= (\first -> 
