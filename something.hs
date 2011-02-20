@@ -1,4 +1,5 @@
 import Control.Applicative
+import Control.Monad.Writer
 import Data.Monoid
 
 data SomethingContext a = Something a
@@ -46,7 +47,15 @@ multThreeIgnoreSecond s1 s2 s3 = do
     z <- s3  
     return (x*z)
 
+logSomething :: SomethingContext Int -> Writer [String] Int
+logSomething (Something n) = Writer (n, ["Received " ++ show n])  
 
+addSomethings :: SomethingContext Int -> SomethingContext Int -> SomethingContext Int -> Writer [String] Int
+addSomethings s1 s2 s3 = do
+    x <- logSomething s1
+    y <- logSomething s2
+    z <- logSomething s3
+    return (x+y+z)
 
 main1 = 
     getLine >>= (\first -> 
