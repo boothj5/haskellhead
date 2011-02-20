@@ -47,15 +47,15 @@ multThreeIgnoreSecond s1 s2 s3 = do
     z <- s3  
     return (x*z)
 
-logSomething :: SomethingContext Int -> Writer [String] Int
-logSomething (Something n) = Writer (n, ["Received " ++ show n])  
+logSomething :: SomethingContext Int -> Writer [String] (SomethingContext Int)
+logSomething (Something n) = Writer ((Something n), ["Received " ++ show n])  
 
-addSomethings :: SomethingContext Int -> SomethingContext Int -> SomethingContext Int -> Writer [String] Int
+addSomethings :: SomethingContext Int -> SomethingContext Int -> SomethingContext Int -> Writer [String] (SomethingContext Int)
 addSomethings s1 s2 s3 = do
     x <- logSomething s1
     y <- logSomething s2
     z <- logSomething s3
-    return (x+y+z)
+    return (x `mappend` y `mappend` z)
 
 main1 = 
     getLine >>= (\first -> 
