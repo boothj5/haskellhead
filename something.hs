@@ -32,41 +32,61 @@ myFuncOnSomething j1 j2 j3 = do
     z <- j3
     Something $ myFunction x y z
 
+multThree :: (Num n) => SomethingContext n -> SomethingContext n -> SomethingContext n -> SomethingContext n
+multThree s1 s2 s3 = do 
+    x <- s1 
+    y <- s2  
+    z <- s3  
+    return (x*y*z)
+
+multThreeIgnoreSecond :: (Num n) => SomethingContext n -> SomethingContext n -> SomethingContext n -> SomethingContext n
+multThreeIgnoreSecond s1 s2 s3 = do 
+    x <- s1 
+    s2  
+    z <- s3  
+    return (x*z)
+
+
+
 main1 = 
     getLine >>= (\first -> 
     putStrLn ("first thing was: " ++ first) >>= (\_ -> 
-    getLine >>= (\line -> 
-    putStrLn ("you said: " ++ line) >>= (\_ ->
+    getLine >>= (\second -> 
+    putStrLn ("second thing was: " ++ second) >>= (\_ ->
     fmap read getLine >>= (\number ->
-    if number > 10 then putStrLn ("Bigger") else putStrLn ("Smaller"))))))
+    if number > 10 
+        then putStrLn ("Bigger") 
+        else putStrLn ("Smaller"))))))
 
 main2 = 
     getLine >>= (\first -> 
     putStrLn ("first thing was: " ++ first) >> ( 
-    getLine >>= (\line -> 
-    putStrLn ("you said: " ++ line) >> (
+    getLine >>= (\second -> 
+    putStrLn ("second thing was: " ++ second) >> (
     fmap read getLine >>= (\number ->
-    if number > 10 then putStrLn ("Bigger") else putStrLn ("Smaller"))))))
+    if number > 10 
+        then putStrLn ("Bigger") 
+        else putStrLn ("Smaller"))))))
 
 main3 = 
     getLine >>= \first -> 
     putStrLn ("first thing was: " ++ first) >>  
-    getLine >>= \line -> 
-    putStrLn ("you said: " ++ line) >> 
+    getLine >>= \second -> 
+    putStrLn ("you said: " ++ second) >> 
     fmap read getLine >>= \number ->
-    if number > 10 then putStrLn ("Bigger") else putStrLn ("Smaller")
+    if number > 10 
+        then putStrLn ("Bigger") 
+        else putStrLn ("Smaller")
 
 main4 = do
     first <- getLine
     putStrLn ("first thing was: " ++ first)
-    line <- getLine
-    putStrLn ("you said: " ++ line)
+    second <- getLine
+    putStrLn ("you said: " ++ second)
     number <- fmap read getLine
     if number > 10
-        then 
-            putStrLn ("Bigger")
-        else
-            putStrLn ("Smaller")
+        then putStrLn ("Bigger")
+        else putStrLn ("Smaller")
         
 
 
