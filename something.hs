@@ -57,6 +57,16 @@ addSomethings s1 s2 s3 = do
     z <- logSomething s3
     return (x `mappend` y `mappend` z)
 
+accSomething :: SomethingContext Integer -> Writer (SomethingContext Integer) ()
+accSomething (Something n) = Writer ((), (Something n))
+
+accSomethings :: SomethingContext Integer -> SomethingContext Integer -> SomethingContext Integer -> Writer (SomethingContext Integer) ()
+accSomethings s1 s2 s3 = do
+    x <- accSomething s1
+    y <- accSomething s2
+    z <- accSomething s3
+    return ()
+
 main1 = 
     getLine >>= (\first -> 
     putStrLn ("first thing was: " ++ first) >>= (\_ -> 
