@@ -107,5 +107,21 @@ main4 = do
         then putStrLn ("Bigger")
         else putStrLn ("Smaller")
         
+doubleWithLog :: (Num a) => SomethingContext a -> Writer String (SomethingContext a)
+doubleWithLog (Something x) = Writer (Something $ x*2, "Doubled " ++ show (Something x) ++ ", ")
 
+addDoubles :: (Num a) => SomethingContext a -> SomethingContext a -> SomethingContext a -> Writer String (SomethingContext a)
+addDoubles s1 s2 s3 = do
+    x <- doubleWithLog s1
+    y <- doubleWithLog s2
+    z <- doubleWithLog s3
+    tell "Adding the doubles."
+    return (addSomething (addSomething x y) z)
 
+addDoublesAlt :: (Num a) => SomethingContext a -> SomethingContext a -> SomethingContext a -> Writer String (SomethingContext a)
+addDoublesAlt s1 s2 s3= 
+    doubleWithLog s1 >>= (\x ->
+    doubleWithLog s2 >>= (\y ->
+    doubleWithLog s3 >>= (\z ->
+    tell "Adding the doubled" >> (
+    return (addSomething (addSomething x y) z)))))

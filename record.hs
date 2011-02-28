@@ -66,8 +66,8 @@ getPTuple :: PTuple a b -> (a,b)
 getPTuple (PTuple (x,y)) = (x,y)
 
 -- example usage
-somePair :: PTyple Integer Double
-somePair = PTyple (12, 2.33)
+somePair :: PTuple Integer Double
+somePair = PTuple (12, 2.33)
    
 -- Doing the same with record syntax
 data PTupleRec a b = PTupleRec { getPTupleRec :: (a,b) }
@@ -89,4 +89,22 @@ newPair = NewPTupleRec (2,["Hello", "there"])
 
 -- possible, but previous is more readable
 anotherNew :: NewPTupleRec String Integer
-anotherNew = NewPTupleRec { getPTupleRec = ("Hello", 5) }
+anotherNew = NewPTupleRec { getNewPTupleRec = ("Hello", 5) }
+
+-- Functions
+
+newtype SomeFunction a = SomeFunction (a -> (a,String))
+
+getSomeFunction :: SomeFunction a -> (a -> (a,String))
+getSomeFunction (SomeFunction f) = f
+
+doubler :: (Num a) => SomeFunction a
+doubler = SomeFunction (\x -> (x*2, "Doubled"))
+
+addFiver :: (Num a) => SomeFunction a
+addFiver = SomeFunction (\x -> (x+5, "Added Five"))
+
+instance Monad SomeFunction where
+    return x= SomeFunction (\x -> (x, "Returned"))
+    SomeFunction sf >>= f = let (res, log) = f $ fst (getSomeFunction sf) in (\x -> (res, log ++ (snd (getSomeFunction sf))))
+

@@ -1,5 +1,6 @@
 import Control.Applicative
 import Control.Monad.Writer
+import Control.Monad.State
 import Data.Monoid
 import qualified Data.Foldable as F
   
@@ -54,6 +55,12 @@ listInsert item EmptyList = Node item (EmptyList)
 listInsert item (Node elem (rest)) 
     | item <= elem = Node item (Node elem (rest))
     | item > elem  = Node elem (listInsert item rest)
+
+listInsertST :: (Ord a) => a -> State (LinkedList a) ()
+listInsertST item = State $ \list -> ((), listInsert item list)
+
+listRemoveST :: (Integral n) => n -> State (LinkedList a) ()
+listRemoveST index = State $ \list -> ((), listRemove index list)
 
 listGet :: (Integral n) => n -> LinkedList a -> Maybe a
 listGet index EmptyList          = Nothing 
@@ -142,7 +149,18 @@ multiplyAllElementsDo list1 list2 = do
     Node (x*y) EmptyList
     
 
+processLinkedList :: LinkedList Char -> LinkedList Char
+processLinkedList list = let
+    newList1 = listInsert 'f' list
+    newList2 = listRemove 0 newList1
+    newList3 = listInsert 'a' newList2
+    in newList3
 
+processLinkedListST :: State (LinkedList Char) ()
+processLinkedListST = do 
+    listInsertST 'f' 
+    listRemoveST 0 
+    listInsertST 'a' 
 
 main = do
     putStrLn "myList"
