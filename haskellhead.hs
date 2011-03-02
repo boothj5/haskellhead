@@ -1,4 +1,6 @@
 import System.IO.Unsafe         (unsafePerformIO)
+import System.Random
+import System.Random.Shuffle
 import Control.Monad
 import Data.Char
 import Data.IORef
@@ -215,10 +217,13 @@ getGameInfo = do
     cards <- fmap read getLine
 
     newDeck <- return $ newDeckWithEnoughCards $ numDecksRequired cards players
+
+    gen <- getStdGen
+    let shuffledDeck = shuffle' newDeck (length newDeck) gen
     modifyGame $ \st ->
                     st { numPlayers     = players
                         ,numCardsEach   = cards
-                        ,deck           = newDeck }
+                        ,deck           = shuffledDeck }
                        
 getPlayerNames = do   
     n <- getGameProperty numPlayers
