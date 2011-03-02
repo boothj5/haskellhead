@@ -16,7 +16,7 @@ data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack 
 data Suit = Hearts | Clubs | Diamonds | Spades deriving (Show, Eq, Ord)
 data Card = Card Rank Suit deriving (Eq, Ord)
 instance Show Card where
-    show (Card rank suit) = show rank ++ " of " ++ show suit
+    show (Card rank suit) = (fmap toUpper (show rank)) ++ " of " ++ (fmap toUpper (show suit))
 
 data Player = Player { 
                 name         :: String
@@ -32,11 +32,11 @@ instance Eq Player where
     p1 == p2 = (name p1) == (name p2)
 
 -- Used to represent the state of the game
-data GameDetails = GameDetails { numPlayers      :: !Int
-                                ,players         :: ![Player]
-                                ,numCardsEach    :: !Int
-                                ,deck            :: ![Card]
-                                ,pile            :: ![Card]
+data GameDetails = GameDetails { numPlayers      :: Int
+                                ,players         :: [Player]
+                                ,numCardsEach    :: Int
+                                ,deck            :: [Card]
+                                ,pile            :: [Card]
                                } 
 instance Show GameDetails where
     show GameDetails { numPlayers   = n
@@ -216,10 +216,10 @@ getGameInfo = do
     putStrLn "Enter number of cards per hand:"
     cards <- fmap read getLine
 
-    newDeck <- return $ newDeckWithEnoughCards $ numDecksRequired cards players
-
     gen <- getStdGen
-    let shuffledDeck = shuffle' newDeck (length newDeck) gen
+    let newDeck = newDeckWithEnoughCards $ numDecksRequired cards players
+        shuffledDeck = shuffle' newDeck (length newDeck) gen
+
     modifyGame $ \st ->
                     st { numPlayers     = players
                         ,numCardsEach   = cards
@@ -233,28 +233,28 @@ getPlayerNames = do
         playerName <- getLine  
         return playerName)  
     
-    newPlayers <- return $ createPlayers playerNames 
+    let newPlayers = createPlayers playerNames 
     modifyGame $ \st -> st { players = newPlayers } 
 
 dealToHand p = do
     cs <- getGameProperty deck
     ps <- getGameProperty players
 
-    dealtPs <- return $ addToNamedPlayersHand p ps (head cs)
+    let dealtPs = addToNamedPlayersHand p ps (head cs)
     modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
 
 dealToFaceUp p = do
     cs <- getGameProperty deck
     ps <- getGameProperty players
 
-    dealtPs <- return $ addToNamedPlayersFaceUp p ps (head cs)
+    let dealtPs = addToNamedPlayersFaceUp p ps (head cs)
     modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
 
 dealToFaceDown p = do
     cs <- getGameProperty deck
     ps <- getGameProperty players
 
-    dealtPs <- return $ addToNamedPlayersFaceDown p ps (head cs)
+    let dealtPs = addToNamedPlayersFaceDown p ps (head cs)
     modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
 
 deal = do
@@ -268,13 +268,13 @@ deal = do
             dealToHand p ))
 
 doSwap playerList p = do
-    theName <- return $ name p
+    let theName = name p
     putStrLn $ theName ++ ", select a hand card to swap:"
-    handCardToSwap   <- fmap read getLine
+    handCardToSwap <- fmap read getLine
     putStrLn $ theName ++ ", select a face up card to swap:"
     faceUpCardToSwap <- fmap read getLine
 
-    swappedPlayers <- return $ swapForNamedPlayer p playerList (handCardToSwap-1) (faceUpCardToSwap-1)
+    let swappedPlayers = swapForNamedPlayer p playerList (handCardToSwap-1) (faceUpCardToSwap-1)
     modifyGame $ \st -> st { players = swappedPlayers }
 
     putStrLn $ theName ++ ", do you want to swap more cards?"
@@ -306,15 +306,17 @@ firstMove = do
     playerList <- getGameProperty players
     oPile <- getGameProperty pile
 
-    p <- return $ playerWithLowestCardFromList playerList
-    cs <- return $ getLowestCards p    
-    nPile <- return $ cs ++ oPile
-    nPlayerList <- return $ removeFromNamedPlayersHand p playerList cs
+    let p = playerWithLowestCardFromList playerList
+        cs = getLowestCards p    
+        nPile = cs ++ oPile
+        nPlayerList = removeFromNamedPlayersHand p playerList cs
 
     modifyGame $ \st -> 
                     st { pile    = nPile 
                         ,players = nPlayerList }
     dealToHand p
+
+    putStrLn $ show (name p) ++ " laid the " ++ show cs
 
 
 main = do
