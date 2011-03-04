@@ -4,6 +4,8 @@ Description:        Haskell implementation of shithead card game
 Author:             James Booth
 Build-Type:         Simple
 Cabal-Version:      >=1.8
+
 Executable haskellhead
-    Main-is:        src/Main.hs
+    Main-is:        Main.hs
     Build-Depends:  base >=4.2, random>=1.0.0.2, random-shuffle>=0.0.2
+    Hs-Source-Dirs: src
