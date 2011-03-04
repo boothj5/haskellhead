@@ -1,12 +1,14 @@
-import Game
 import Data.IORef
-import Control.Monad
+
 import System.Random
 import System.Random.Shuffle
+import Control.Monad
+import Game
+import State
 
 ------------------------------------------------
 --
--- IO Actions, either manipulate the game state,
+-- IO Actions, either manipulate the game stateST,
 -- or interact with the user
 --
 
@@ -16,7 +18,7 @@ clearScreen = do
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
 showGame = do
-    game <- readIORef state
+    game <- readIORef stateST
     putStrLn $ show game
 
 getGameInfo = do
@@ -29,13 +31,13 @@ getGameInfo = do
     let newDeck = newDeckWithEnoughCards $ numDecksRequired cards players
         shuffledDeck = shuffle' newDeck (length newDeck) gen
 
-    modifyGame $ \st ->
+    modifyGameST $ \st ->
                     st { numPlayers     = players
                         ,numCardsEach   = cards
                         ,deck           = shuffledDeck }
                        
 getPlayerNames = do   
-    n <- getGameProperty numPlayers
+    n <- getGamePropertyST numPlayers
     
     playerNames <- forM [1..n] (\a -> do  
         putStrLn $ "Enter name for player " ++ show a ++ ":"  
@@ -43,38 +45,7 @@ getPlayerNames = do
         return playerName)  
     
     let newPlayers = createPlayers playerNames 
-    modifyGame $ \st -> st { players = newPlayers } 
-
-dealToHand p = do
-    cs <- getGameProperty deck
-    ps <- getGameProperty players
-
-    let dealtPs = addToNamedPlayersHand p ps (head cs)
-    modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
-
-dealToFaceUp p = do
-    cs <- getGameProperty deck
-    ps <- getGameProperty players
-
-    let dealtPs = addToNamedPlayersFaceUp p ps (head cs)
-    modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
-
-dealToFaceDown p = do
-    cs <- getGameProperty deck
-    ps <- getGameProperty players
-
-    let dealtPs = addToNamedPlayersFaceDown p ps (head cs)
-    modifyGame $ \st -> st { players = dealtPs, deck = (tail cs) }
-
-deal = do
-    cardsEach  <- getGameProperty numCardsEach
-    playerList <- getGameProperty players
-
-    forM playerList (\p -> do
-        forM [1..cardsEach] (\_ -> do
-            dealToFaceDown p
-            dealToFaceUp p 
-            dealToHand p ))
+    modifyGameST $ \st -> st { players = newPlayers } 
 
 doSwap playerList p = do
     let theName = name p
@@ -84,7 +55,7 @@ doSwap playerList p = do
     faceUpCardToSwap <- fmap read getLine
 
     let swappedPlayers = swapForNamedPlayer p playerList (handCardToSwap-1) (faceUpCardToSwap-1)
-    modifyGame $ \st -> st { players = swappedPlayers }
+    modifyGameST $ \st -> st { players = swappedPlayers }
 
     putStrLn $ theName ++ ", do you want to swap more cards?"
     swapMore <- getLine
@@ -97,7 +68,7 @@ doSwap playerList p = do
 
 
 swapAll = do
-    playerList <- getGameProperty players
+    playerList <- getGamePropertyST players
 
     forM playerList (\p -> do
         theName <- return $ name p
@@ -112,8 +83,8 @@ swapAll = do
                 return ())
    
 firstMove = do
-    playerList <- getGameProperty players
-    oPile <- getGameProperty pile
+    playerList <- getGamePropertyST players
+    oPile <- getGamePropertyST pile
 
     let p = playerWithLowestCardFromList playerList
         cs = getLowestCards p    
@@ -121,10 +92,10 @@ firstMove = do
         nPlayerList = removeFromNamedPlayersHand p playerList cs
         nPlayerList2 = makeCurrentPlayer p nPlayerList
 
-    modifyGame $ \st -> 
+    modifyGameST $ \st -> 
                     st { pile    = nPile 
                         ,players = nPlayerList2 }
-    dealToHand p
+    dealToHandST p
 
     putStrLn $ show (name p) ++ " laid the " ++ show cs
 
@@ -139,7 +110,7 @@ main = do
 
     getPlayerNames
 
-    deal
+    dealST
 
     clearScreen
     showGame
@@ -155,7 +126,7 @@ main = do
     
 
 
---    withGame $ \st -> do
+--    withGameST $ \st -> do
 --        case numCardsEach st > 3 of
 --            True -> putStrLn "More than 3 cards"   
 --            False -> putStrLn "Less than or 3 cards"

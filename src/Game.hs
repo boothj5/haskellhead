@@ -1,8 +1,6 @@
 module Game where 
 
-import System.IO.Unsafe         (unsafePerformIO)
 import Data.Char
-import Data.IORef
 ------------------------------------------------
 
 --
@@ -50,36 +48,6 @@ instance Show GameDetails where
                           ++ "\nDeck : " ++ show d
                           ++ "\nPile : " ++ show pile
 
-------------------------------------------------
-
---
--- Game state management
---
-
--- Initial state
-emptySt :: GameDetails
-emptySt = GameDetails { numPlayers      = 0
-                       ,players         = []
-                       ,numCardsEach    = 0
-                       ,deck            = [] 
-                       ,pile            = [] }
-
--- Global state variables
-state :: IORef GameDetails
-state = unsafePerformIO $ newIORef emptySt
-{-# NOINLINE state #-}
-   
--- Access a component of the state with a projection function
-getGameProperty :: (GameDetails -> a) -> IO a
-getGameProperty f = withGame (return . f)
-   
--- Perform a (read-only) IO action on the state
-withGame :: (GameDetails -> IO a) -> IO a
-withGame f = readIORef state >>= f
-
--- Modify the game
-modifyGame :: (GameDetails -> GameDetails) -> IO ()
-modifyGame  f = modifyIORef state f
 
 ------------------------------------------------
 --
