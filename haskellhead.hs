@@ -90,6 +90,24 @@ modifyGame  f = modifyIORef state f
 
 -- determine the number of decks of cards required in game, 
 -- given number of players and number of cards per hand
+burnRank :: Rank
+burnRank = Ten
+
+missAGoRank :: Rank
+missAGoRank = Eight
+
+invisibleRank :: Rank
+invisibleRank = Seven
+
+resetRank :: Rank
+resetRank = Two
+
+specialRanks :: [Rank]
+specialRanks = [burnRank, missAGoRank, invisibleRank, resetRank]
+
+specialCard :: Card -> Bool
+specialCard (Card rank suit) = rank `elem` specialRanks
+
 numDecksRequired :: (Integral t, Integral a) => a -> a -> t
 numDecksRequired cs ps = ( div52 $ fromIntegral $ total cs ps ) + ( remDeck $ total cs ps )
     where div52 n   = truncate $ n / 52
@@ -194,6 +212,15 @@ removeFromNamedPlayersHand _ [] _        = []
 removeFromNamedPlayersHand _ ps []       = ps
 removeFromNamedPlayersHand p1 (p2:ps) cs | p1 == p2  = (removeFromPlayersHand p2 cs) : ps
                                          | otherwise = p2 : (removeFromNamedPlayersHand p1 ps cs)
+                                         
+nextTurn :: [Player] -> [Player]
+nextTurn [] = []
+nextTurn (p:[]) = (p:[])
+nextTurn (p:ps) = ps ++ p:[]
+
+makeCurrentPlayer :: Player -> [Player] -> [Player]
+makeCurrentPlayer cp (p:ps) | cp == p = p:ps
+                            | otherwise = let newPs = nextTurn (p:ps) in makeCurrentPlayer cp newPs 
 
 ------------------------------------------------
 --
@@ -310,10 +337,11 @@ firstMove = do
         cs = getLowestCards p    
         nPile = cs ++ oPile
         nPlayerList = removeFromNamedPlayersHand p playerList cs
+        nPlayerList2 = makeCurrentPlayer p nPlayerList
 
     modifyGame $ \st -> 
                     st { pile    = nPile 
-                        ,players = nPlayerList }
+                        ,players = nPlayerList2 }
     dealToHand p
 
     putStrLn $ show (name p) ++ " laid the " ++ show cs
