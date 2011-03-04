@@ -108,6 +108,9 @@ specialRanks = [burnRank, missAGoRank, invisibleRank, resetRank]
 specialCard :: Card -> Bool
 specialCard (Card rank suit) = rank `elem` specialRanks
 
+equalsRank :: Card -> Card -> Bool
+equalsRank (Card r1 _) (Card r2 _) = r1 == r2
+
 numDecksRequired :: (Integral t, Integral a) => a -> a -> t
 numDecksRequired cs ps = ( div52 $ fromIntegral $ total cs ps ) + ( remDeck $ total cs ps )
     where div52 n   = truncate $ n / 52
@@ -189,16 +192,22 @@ charToBoolean s | (toUpper $ s !! 0) == 'Y'= True
 		
 playerWithLowestCard :: Player -> Player -> Player
 playerWithLowestCard p1 p2 = if ((min p1Min p2Min) == p1Min) then p1 else p2
-    where p1Min = minimum $ hand p1
-          p2Min = minimum $ hand p2
+    where p1Min = getLowestCard p1
+          p2Min = getLowestCard p2
 
 playerWithLowestCardFromList :: [Player] -> Player
 playerWithLowestCardFromList [] = error "No players"
 playerWithLowestCardFromList (player:[]) = player
 playerWithLowestCardFromList (player:rest) = playerWithLowestCard player (playerWithLowestCardFromList rest)
 
+getLowestCard :: Player -> Card
+getLowestCard p = minimum $ filter (\c -> not $ specialCard c) (hand p)
+
 getLowestCards :: Player -> [Card]
-getLowestCards p = (minimum $ hand p) : []
+getLowestCards p = lowestCard : filter (\c -> equalsRank lowestCard c) handMinusLowest
+    where playersHand = hand p
+          lowestCard = getLowestCard p
+          handMinusLowest = filter (\c -> lowestCard /= c) playersHand
 
 removeFromPlayersHand :: Player -> [Card] -> Player
 removeFromPlayersHand p [] = p
@@ -378,6 +387,3 @@ main = do
 --            True -> putStrLn "More than 3 cards"   
 --            False -> putStrLn "Less than or 3 cards"
 
-
-
-            
