@@ -80,6 +80,35 @@ specialCard (Card rank suit) = rank `elem` specialRanks
 equalsRank :: Card -> Card -> Bool
 equalsRank (Card r1 _) (Card r2 _) = r1 == r2
 
+validMove :: Card -> [Card] -> Bool
+validMove c              []                  = True
+validMove (Card Two   _) _                   = True
+validMove (Card Seven _) _                   = True
+validMove (Card Ten   _) _                   = True
+validMove c1             ((Card Seven _):cs) = validMove c1 cs
+validMove (Card r1    _) ((Card r2 _)   :_)  | r1 >= r2  = True
+                                             | otherwise = False
+
+inPlay :: GameDetails -> Bool
+inPlay game = if (playersWithCards (players game) >= 2) then True else False
+
+playersWithCards :: [Player] -> Integer
+playersWithCards [] = 0
+playersWithCards (p:ps) | hasCards p = 1 + playersWithCards ps
+                        | otherwise  = playersWithCards ps
+                        
+hasCards :: Player -> Bool
+hasCards player = hasCardsInHand player || hasCardsInFaceUp player || hasCardsInFaceDown player
+
+hasCardsInHand :: Player -> Bool
+hasCardsInHand player = (length $ hand player) > 0
+
+hasCardsInFaceUp :: Player -> Bool
+hasCardsInFaceUp player = (length $ faceUp player) > 0
+
+hasCardsInFaceDown :: Player -> Bool
+hasCardsInFaceDown player = (length $ faceDown player) > 0
+
 numDecksRequired :: (Integral t, Integral a) => a -> a -> t
 numDecksRequired cs ps = ( div52 $ fromIntegral $ total cs ps ) + ( remDeck $ total cs ps )
     where div52 n   = truncate $ n / 52

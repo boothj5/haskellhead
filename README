@@ -1,3 +1,16 @@
 To build:
 
-    cabal install
+    cabal configure
+    cabal build
+
+To run:
+
+    ./dist/build/haskellhead/haskellhead
+
+I to just install straight to your ~/bin directory
+
+    cabal install --prefix=$HOME --user
+
+And provided your bin directory is on your PATH, to run
+
+    haskellhead

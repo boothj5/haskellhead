@@ -61,6 +61,30 @@ makeFirstMove = do
     dealToHandST player (length cards)
     putStrLn $ show (name player) ++ " laid the " ++ show cards
 
+makeMove player = do
+    putStrLn $ (name player) ++ ", which card do you wish to lay?"
+    cardToPlay <- fmap read getLine
+    let card = (hand player) !! (cardToPlay-1)
+    currentPile <- getGamePropertyST pile
+    if (not $ validMove card currentPile)
+        then do 
+            putStrLn $ "You cannot lay the " ++ show card
+            makeMove player
+        else do
+            layCardsST player (card:[])
+            dealToHandST player 1
+            return ()
+
+nextMove = do
+    currentPlayer <- moveToNextPlayerST
+    clearScreen
+    showGame
+    makeMove currentPlayer
+    game <- getGameDetailsST
+    if (inPlay game)
+        then nextMove
+        else return ()
+
 main = do
     clearScreen
     putStrLn "Welcome to Haskellhead!"
@@ -91,8 +115,5 @@ main = do
 
     swapAll
     makeFirstMove
-    nextPlayer <- moveToNextPlayerST
-    
-    clearScreen
-    showGame
-    putStrLn $ (name nextPlayer) ++ ", which card do you wish to lay?"
+ 
+    nextMove
