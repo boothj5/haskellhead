@@ -14,3 +14,8 @@ I to just install straight to your ~/bin directory
 And provided your bin directory is on your PATH, to run
 
     haskellhead
+
+Running tests
+
+    cd testsuite
+    ./runtests.sh
