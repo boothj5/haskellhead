@@ -10,6 +10,7 @@ module State
 , dealToFaceDownST
 , dealST
 , moveToNextPlayerST
+, pickUpPileST
 ) where
 
 import System.IO.Unsafe         (unsafePerformIO)
@@ -95,6 +96,14 @@ layCardsST player cards = do
                     st { pile    = newPile 
                         ,players = nPlayerList2
                         ,lastMove = move }
+
+-- make player pick up pile
+pickUpPileST player = do
+    cs <- getGamePropertyST pile
+    ps <- getGamePropertyST players
+    let pickedUpPs = addToNamedPlayersHand player ps cs
+        move = (name player) ++ " picked up " ++ (show $ length cs) ++ " cards"
+    modifyGameST $ \st -> st { players = pickedUpPs, pile = [], lastMove = move }
 
 -- move on to next player
 moveToNextPlayerST = do

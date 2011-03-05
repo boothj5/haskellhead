@@ -75,11 +75,21 @@ makeMove player = do
             dealToHandST player 1
             return ()
 
+cantMove player = do
+    putStrLn $ "OH DEAR! " ++ (name player) ++ ", you cannot move."
+    putStrLn "Press enter to pick up the pile."
+    getLine
+    pickUpPileST player
+    nextMove
+
 nextMove = do
     currentPlayer <- moveToNextPlayerST
+    thePile <- getGamePropertyST pile
     clearScreen
     showGame
-    makeMove currentPlayer
+    if (canMove currentPlayer thePile)
+        then makeMove currentPlayer
+        else cantMove currentPlayer
     game <- getGameDetailsST
     if (inPlay game)
         then nextMove

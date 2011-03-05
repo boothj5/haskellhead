@@ -89,6 +89,10 @@ validMove c1             ((Card Seven _):cs) = validMove c1 cs
 validMove (Card r1    _) ((Card r2 _)   :_)  | r1 >= r2  = True
                                              | otherwise = False
 
+canMove :: Player -> [Card] -> Bool
+canMove p [] = True
+canMove p cs = foldl (\can c -> if (validMove c cs) then True else can) False (hand p)
+
 inPlay :: GameDetails -> Bool
 inPlay game = if (playersWithCards (players game) >= 2) then True else False
 
@@ -228,3 +232,5 @@ nextTurn (p:ps) = ps ++ p:[]
 makeCurrentPlayer :: (Eq a) => a -> [a] -> [a]
 makeCurrentPlayer cp (p:ps) | cp == p = p:ps
                             | otherwise = let newPs = nextTurn (p:ps) in makeCurrentPlayer cp newPs 
+                                              
+
