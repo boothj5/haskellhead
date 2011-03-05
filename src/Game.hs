@@ -71,11 +71,11 @@ invisibleRank = Seven
 resetRank :: Rank
 resetRank = Two
 
-specialRanks :: [Rank]
-specialRanks = [burnRank, missAGoRank, invisibleRank, resetRank]
+layOnAnyThingRanks :: [Rank]
+layOnAnyThingRanks = [burnRank, invisibleRank, resetRank]
 
 specialCard :: Card -> Bool
-specialCard (Card rank suit) = rank `elem` specialRanks
+specialCard (Card rank suit) = rank `elem` layOnAnyThingRanks
 
 equalsRank :: Card -> Card -> Bool
 equalsRank (Card r1 _) (Card r2 _) = r1 == r2
