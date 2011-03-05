@@ -4,15 +4,17 @@ import Game
 -- test moveing through the players
 initial = [1,2,3,4]
 expected = [2,3,4,1]
-testNextTurn = TestCase (assertEqual 
-                    "Test next turn, " 
-                    expected (nextTurn initial))
+testNextTurn = 
+    TestCase (assertEqual 
+        "Test next turn, " 
+        expected (nextTurn initial))
 
 circleList list 0 = list
 circleList list n = circleList (nextTurn list) (n-1)
-testCompleteCicle = TestCase (assertEqual 
-                        "Test complete circle, "
-                        initial (circleList initial (length initial)))
+testCompleteCicle = 
+    TestCase (assertEqual 
+        "Test complete circle, "
+        initial (circleList initial (length initial)))
 
 cardA = Card Six Spades
 cardB = Card Jack Diamonds
@@ -48,19 +50,33 @@ gameNotInPlay = GameDetails { numPlayers      = 3
                        ,lastMove        = "" }
 
 
-testInPlayWhenTwoPlayersHaveCards = TestCase (assertBool
-                                        "Test in play when two players have cards"
-                                        (inPlay gameInPlay)) 
+testInPlayWhenTwoPlayersHaveCards = 
+    TestCase (assertBool
+        "Test in play when two players have cards"
+        (inPlay gameInPlay)) 
 
-testNotInPlayWhenOnePlayerHasCards = TestCase (assertBool
-                                        "Test not in play when one player has cards"
-                                        (not $ inPlay gameNotInPlay)) 
+testNotInPlayWhenOnePlayerHasCards = 
+    TestCase (assertBool
+        "Test not in play when one player has cards"
+        (not $ inPlay gameNotInPlay)) 
+                                        
+testOneDeckRequired = 
+    TestCase (assertEqual
+        "Test correct number of decks when only one needed"
+        1 (numDecksRequired 3 2))
+
+testTwoDeckRequired = 
+    TestCase (assertEqual
+        "Test correct number of decks when two needed"
+        2 (numDecksRequired 3 6))
 
 -- Suite
 tests = TestList [TestLabel "NextTurn" testNextTurn
                 , TestLabel "CompleteCicle " testCompleteCicle 
                 , TestLabel "InPlayWhenTwoPlayersHaveCards" testInPlayWhenTwoPlayersHaveCards
                 , TestLabel "NotInPlayWhenOnePlayerHasCards" testNotInPlayWhenOnePlayerHasCards
+                , TestLabel "OneDeckRequired" testOneDeckRequired
+                , TestLabel "TwoDeckRequired" testTwoDeckRequired
                 ]
 
 main = do
