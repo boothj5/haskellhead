@@ -188,11 +188,11 @@ removeFromNamedPlayersHand _ ps []       = ps
 removeFromNamedPlayersHand p1 (p2:ps) cs | p1 == p2  = (removeFromPlayersHand p2 cs) : ps
                                          | otherwise = p2 : (removeFromNamedPlayersHand p1 ps cs)
                                          
-nextTurn :: [Player] -> [Player]
+nextTurn :: [a] -> [a]
 nextTurn [] = []
 nextTurn (p:[]) = (p:[])
 nextTurn (p:ps) = ps ++ p:[]
 
-makeCurrentPlayer :: Player -> [Player] -> [Player]
+makeCurrentPlayer :: (Eq a) => a -> [a] -> [a]
 makeCurrentPlayer cp (p:ps) | cp == p = p:ps
                             | otherwise = let newPs = nextTurn (p:ps) in makeCurrentPlayer cp newPs 
