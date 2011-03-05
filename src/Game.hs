@@ -20,7 +20,7 @@ data Player = Player {
                ,faceUp       :: [Card]
                ,faceDown     :: [Card] }
 instance Show Player where
-    show (Player {name=n, hand=h, faceUp=u, faceDown=d}) = "\nplayer name: " ++ n
+    show (Player {name=n, hand=h, faceUp=u, faceDown=d}) = "\n\nplayer name: " ++ n
                                                            ++ "\nhand: " ++ show h
                                                            ++ "\nfaceUp: " ++ show u
                                                            ++ "\nfaceDown: " ++ show d
@@ -33,20 +33,23 @@ data GameDetails = GameDetails { numPlayers      :: Int
                                 ,numCardsEach    :: Int
                                 ,deck            :: [Card]
                                 ,pile            :: [Card]
+                                ,lastMove        :: String
                                } 
 instance Show GameDetails where
     show GameDetails { numPlayers   = n
-                      ,players      = p
-                      ,numCardsEach = c
-                      ,deck         = d 
-                      ,pile         = pile } =  "\nGame Details: " 
-                          ++ "\nPlayers: " ++ show n
-                          ++ "\nCards Each: " ++ show c
-                          ++ "\n"
-                          ++ "\nPlayers details: " ++ show p
-                          ++ "\n" 
-                          ++ "\nDeck : " ++ show d
-                          ++ "\nPile : " ++ show pile
+            ,players      = p
+            ,numCardsEach = c
+            ,deck         = d 
+            ,pile         = pile
+            ,lastMove     = lm } =  
+                "\nGame Details: " 
+                ++ "\n"
+                ++ "\nPlayers details: " ++ show p
+                ++ "\n" 
+                ++ "\nDeck remaining : " ++ show (length d)
+                ++ "\nPile : " ++ show pile 
+                ++ "\n"
+                ++ "\n" ++ lm
 
 
 ------------------------------------------------
@@ -102,9 +105,9 @@ createPlayers (x:xs) = ( Player { name = x, hand = [], faceUp = [], faceDown = [
 
 -- Given a player and a card, will return a new player, 
 -- with every thing the same but the Card added to one of their hands
-addToPlayersHand :: Player -> Card -> Player
-addToPlayersHand p c = Player { name        = ( name p )
-                               ,hand        = ( c : (hand p) )
+addToPlayersHand :: Player -> [Card] -> Player
+addToPlayersHand p cs = Player { name        = ( name p )
+                               ,hand        = ( cs ++ (hand p) )
                                ,faceUp      = ( faceUp p )
                                ,faceDown    = ( faceDown p ) }
 
@@ -125,10 +128,10 @@ addToPlayersFaceDown p c = Player { name        = ( name p )
 -- a list of players with everything the same but the card
 -- added to one of the players hands, whos name matches that of the player 
 -- passed in
-addToNamedPlayersHand :: Player -> [Player] -> Card -> [Player]
+addToNamedPlayersHand :: Player -> [Player] -> [Card] -> [Player]
 addToNamedPlayersHand _ []     _   = []
-addToNamedPlayersHand p1 (p2:ps) c | p1 == p2    = (addToPlayersHand p2 c) : ps
-                                   | otherwise   = p2 : (addToNamedPlayersHand p1 ps c)
+addToNamedPlayersHand p1 (p2:ps) cs | p1 == p2    = (addToPlayersHand p2 cs) : ps
+                                   | otherwise   = p2 : (addToNamedPlayersHand p1 ps cs)
 
 addToNamedPlayersFaceUp :: Player -> [Player] -> Card -> [Player]
 addToNamedPlayersFaceUp _ []     _   = []

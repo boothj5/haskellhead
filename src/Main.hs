@@ -18,13 +18,6 @@ showGame = do
     game <- getGameDetailsST
     putStrLn $ show game
 
-getGameInfo = do
-    putStrLn "Enter number of players:"
-    players <- fmap read getLine
-    putStrLn "Enter number of cards per hand:"
-    cards <- fmap read getLine
-    createDeckST cards players
-                       
 getPlayerNames = do   
     n <- getGamePropertyST numPlayers
     playerNames <- forM [1..n] (\a -> do  
@@ -33,54 +26,73 @@ getPlayerNames = do
         return playerName)  
     createPlayersST playerNames 
 
-doSwap p = do
-    let theName = name p
+doSwap player = do
+    let theName = name player
     putStrLn $ theName ++ ", select a hand card to swap:"
     handCardToSwap <- fmap read getLine
     putStrLn $ theName ++ ", select a face up card to swap:"
     faceUpCardToSwap <- fmap read getLine
-    swapCardsST p (handCardToSwap-1) (faceUpCardToSwap-1)
+    swapCardsST player (handCardToSwap-1) (faceUpCardToSwap-1)
     putStrLn $ theName ++ ", do you want to swap more cards?"
     swapMore <- getLine
     if (charToBoolean swapMore) 
         then
-            doSwap p
+            doSwap player
         else 
             return ()
 
 swapAll = do
     playerList <- getGamePropertyST players
-    forM playerList (\p -> do
-        theName <- return $ name p
+    forM playerList (\player -> do
+        let theName = name player
         putStrLn $ theName ++ ", do you want to swap cards?"
         swap <- getLine
         if (charToBoolean swap) 
             then 
-                doSwap p
+                doSwap player
             else 
                 return ())
    
-firstMove = do
+makeFirstMove = do
     playerList <- getGamePropertyST players
-    let p = playerWithLowestCardFromList playerList
-        cs = getLowestCards p    
-    layCardsST p cs
-    dealToHandST p
-    putStrLn $ show (name p) ++ " laid the " ++ show cs
+    let player = playerWithLowestCardFromList playerList
+        cards = getLowestCards player    
+    layCardsST player cards
+    dealToHandST player (length cards)
+    putStrLn $ show (name player) ++ " laid the " ++ show cards
 
 main = do
     clearScreen
     putStrLn "Welcome to Haskellhead!"
     putStrLn ""
-    getGameInfo
+    putStrLn "Enter number of players:"
+    players <- fmap read getLine
+    putStrLn "Enter number of cards per hand:"
+    cards <- fmap read getLine
+
+    createDeckST cards players
+    
     putStrLn ""
-    getPlayerNames
+
+    n <- getGamePropertyST numPlayers
+    playerNames <- forM [1..n] (\a -> do  
+        putStrLn $ "Enter name for player " ++ show a ++ ":"  
+        playerName <- getLine  
+        return playerName)  
+    createPlayersST playerNames 
+
     dealST
+
     clearScreen
     showGame
     putStrLn ""
     putStrLn "Press enter to continue"
     getLine
+
     swapAll
-    firstMove
+    makeFirstMove
+    nextPlayer <- moveToNextPlayerST
+    
+    clearScreen
     showGame
+    putStrLn $ (name nextPlayer) ++ ", which card do you wish to lay?"

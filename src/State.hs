@@ -1,4 +1,16 @@
-module State where
+module State 
+( getGameDetailsST
+, getGamePropertyST
+, createDeckST
+, createPlayersST
+, swapCardsST
+, layCardsST
+, dealToHandST
+, dealToFaceUpST
+, dealToFaceDownST
+, dealST
+, moveToNextPlayerST
+) where
 
 import System.IO.Unsafe         (unsafePerformIO)
 import Data.IORef
@@ -19,7 +31,8 @@ emptyST = GameDetails { numPlayers      = 0
                        ,players         = []
                        ,numCardsEach    = 0
                        ,deck            = [] 
-                       ,pile            = [] }
+                       ,pile            = []
+                       ,lastMove        = "" }
 
 -- Global state variable
 stateST :: IORef GameDetails
@@ -77,16 +90,25 @@ layCardsST player cards = do
     let newPile = cards ++ p
         nPlayerList = removeFromNamedPlayersHand player ps cards
         nPlayerList2 = makeCurrentPlayer player nPlayerList
+        move = (name player) ++ " laid the " ++ show cards
     modifyGameST $ \st -> 
                     st { pile    = newPile 
-                        ,players = nPlayerList2 }
-   
+                        ,players = nPlayerList2
+                        ,lastMove = move }
+
+-- move on to next player
+moveToNextPlayerST = do
+    ps <- getGamePropertyST players
+    let newPs = nextTurn ps
+    modifyGameST $ \st -> st { players = newPs }
+    return (head newPs)
+
 -- deal a card from the deck to the players hand
-dealToHandST p = do
+dealToHandST player num = do
     cs <- getGamePropertyST deck
     ps <- getGamePropertyST players
-    let dealtPs = addToNamedPlayersHand p ps (head cs)
-    modifyGameST $ \st -> st { players = dealtPs, deck = (tail cs) }
+    let dealtPs = addToNamedPlayersHand player ps (take num cs)
+    modifyGameST $ \st -> st { players = dealtPs, deck = (drop num cs) }
 
 -- deal a card from the deck to the players face up hand
 dealToFaceUpST p = do
@@ -110,4 +132,4 @@ dealST = do
         forM [1..cardsEach] (\_ -> do
             dealToFaceDownST p
             dealToFaceUpST p 
-            dealToHandST p ))
+            dealToHandST p 1))
