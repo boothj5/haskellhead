@@ -64,7 +64,7 @@ makeFirstMove = do
 makeMove player = do
     putStrLn $ (name player) ++ ", which card do you wish to lay?"
     cardToPlay <- fmap read getLine
-    let card = (hand player) !! (cardToPlay-1)
+    let card = getCard player (cardToPlay-1)
     currentPile <- getGamePropertyST pile
     if (not $ validMove card currentPile)
         then do 

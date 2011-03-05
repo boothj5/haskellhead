@@ -91,7 +91,26 @@ validMove (Card r1    _) ((Card r2 _)   :_)  | r1 >= r2  = True
 
 canMove :: Player -> [Card] -> Bool
 canMove p [] = True
-canMove p cs = foldl (\can c -> if (validMove c cs) then True else can) False (hand p)
+canMove p cs = if (hasCardsInHand p) 
+                    then canMoveFromHand p cs 
+                    else if (hasCardsInFaceUp p) 
+                            then canMoveFromFaceUp p cs
+                            else False
+
+canMoveFromHand :: Player -> [Card] -> Bool
+canMoveFromHand p [] = True
+canMoveFromHand p cs = foldl (\can c -> if (validMove c cs) then True else can) False (hand p)
+
+canMoveFromFaceUp :: Player -> [Card] -> Bool
+canMoveFromFaceUp p [] = True
+canMoveFromFaceUp p cs = foldl (\can c -> if (validMove c cs) then True else can) False (faceUp p)
+
+getCard :: Player -> Int -> Card
+getCard p n = if (hasCardsInHand p)
+                 then (hand p) !! n
+                 else if (hasCardsInFaceUp p)
+                         then (faceUp p) !! n
+                         else (faceDown p) !! n
 
 inPlay :: GameDetails -> Bool
 inPlay game = if (playersWithCards (players game) >= 2) then True else False
@@ -224,6 +243,34 @@ removeFromNamedPlayersHand _ ps []       = ps
 removeFromNamedPlayersHand p1 (p2:ps) cs | p1 == p2  = (removeFromPlayersHand p2 cs) : ps
                                          | otherwise = p2 : (removeFromNamedPlayersHand p1 ps cs)
                                          
+
+removeFromPlayersFaceUp :: Player -> [Card] -> Player
+removeFromPlayersFaceUp p [] = p
+removeFromPlayersFaceUp p cs = Player { name = ( name p )
+                                     ,hand = ( hand p )
+                                     ,faceUp = ( filter (\c -> c `notElem` cs) $ faceUp p )
+                                     ,faceDown = ( faceDown p ) }
+
+removeFromNamedPlayersFaceUp :: Player -> [Player] -> [Card] -> [Player]
+removeFromNamedPlayersFaceUp _ [] _        = []
+removeFromNamedPlayersFaceUp _ ps []       = ps
+removeFromNamedPlayersFaceUp p1 (p2:ps) cs | p1 == p2  = (removeFromPlayersFaceUp p2 cs) : ps
+                                         | otherwise = p2 : (removeFromNamedPlayersFaceUp p1 ps cs)
+
+removeFromPlayersFaceDown :: Player -> [Card] -> Player
+removeFromPlayersFaceDown p [] = p
+removeFromPlayersFaceDown p cs = Player { name = ( name p )
+                                     ,hand = ( hand p )
+                                     ,faceUp = ( faceUp p )
+                                     ,faceDown = ( filter (\c -> c `notElem` cs) $ faceDown p ) }
+
+removeFromNamedPlayersFaceDown :: Player -> [Player] -> [Card] -> [Player]
+removeFromNamedPlayersFaceDown _ [] _        = []
+removeFromNamedPlayersFaceDown _ ps []       = ps
+removeFromNamedPlayersFaceDown p1 (p2:ps) cs | p1 == p2  = (removeFromPlayersFaceDown p2 cs) : ps
+                                         | otherwise = p2 : (removeFromNamedPlayersFaceDown p1 ps cs)
+
+
 nextTurn :: [a] -> [a]
 nextTurn [] = []
 nextTurn (p:[]) = (p:[])
