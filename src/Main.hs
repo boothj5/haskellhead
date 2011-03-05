@@ -1,7 +1,4 @@
 import Data.IORef
-
-import System.Random
-import System.Random.Shuffle
 import Control.Monad
 import Game
 import State
@@ -18,7 +15,7 @@ clearScreen = do
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
 showGame = do
-    game <- readIORef stateST
+    game <- getGameDetailsST
     putStrLn $ show game
 
 getGameInfo = do
@@ -26,108 +23,64 @@ getGameInfo = do
     players <- fmap read getLine
     putStrLn "Enter number of cards per hand:"
     cards <- fmap read getLine
-
-    gen <- getStdGen
-    let newDeck = newDeckWithEnoughCards $ numDecksRequired cards players
-        shuffledDeck = shuffle' newDeck (length newDeck) gen
-
-    modifyGameST $ \st ->
-                    st { numPlayers     = players
-                        ,numCardsEach   = cards
-                        ,deck           = shuffledDeck }
+    createDeckST cards players
                        
 getPlayerNames = do   
     n <- getGamePropertyST numPlayers
-    
     playerNames <- forM [1..n] (\a -> do  
         putStrLn $ "Enter name for player " ++ show a ++ ":"  
         playerName <- getLine  
         return playerName)  
-    
-    let newPlayers = createPlayers playerNames 
-    modifyGameST $ \st -> st { players = newPlayers } 
+    createPlayersST playerNames 
 
-doSwap playerList p = do
+doSwap p = do
     let theName = name p
     putStrLn $ theName ++ ", select a hand card to swap:"
     handCardToSwap <- fmap read getLine
     putStrLn $ theName ++ ", select a face up card to swap:"
     faceUpCardToSwap <- fmap read getLine
-
-    let swappedPlayers = swapForNamedPlayer p playerList (handCardToSwap-1) (faceUpCardToSwap-1)
-    modifyGameST $ \st -> st { players = swappedPlayers }
-
+    swapCardsST p (handCardToSwap-1) (faceUpCardToSwap-1)
     putStrLn $ theName ++ ", do you want to swap more cards?"
     swapMore <- getLine
-
     if (charToBoolean swapMore) 
         then
-            doSwap playerList p
+            doSwap p
         else 
             return ()
 
-
 swapAll = do
     playerList <- getGamePropertyST players
-
     forM playerList (\p -> do
         theName <- return $ name p
-
         putStrLn $ theName ++ ", do you want to swap cards?"
         swap <- getLine
-
         if (charToBoolean swap) 
             then 
-                doSwap playerList p
+                doSwap p
             else 
                 return ())
    
 firstMove = do
     playerList <- getGamePropertyST players
-    oPile <- getGamePropertyST pile
-
     let p = playerWithLowestCardFromList playerList
         cs = getLowestCards p    
-        nPile = cs ++ oPile
-        nPlayerList = removeFromNamedPlayersHand p playerList cs
-        nPlayerList2 = makeCurrentPlayer p nPlayerList
-
-    modifyGameST $ \st -> 
-                    st { pile    = nPile 
-                        ,players = nPlayerList2 }
+    layCardsST p cs
     dealToHandST p
-
     putStrLn $ show (name p) ++ " laid the " ++ show cs
-
 
 main = do
     clearScreen
     putStrLn "Welcome to Haskellhead!"
     putStrLn ""
-
     getGameInfo
     putStrLn ""
-
     getPlayerNames
-
     dealST
-
     clearScreen
     showGame
     putStrLn ""
     putStrLn "Press enter to continue"
     getLine
-
     swapAll
-
     firstMove
-
     showGame
-    
-
-
---    withGameST $ \st -> do
---        case numCardsEach st > 3 of
---            True -> putStrLn "More than 3 cards"   
---            False -> putStrLn "Less than or 3 cards"
-
