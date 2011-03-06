@@ -104,7 +104,9 @@ layCardsST player cards = do
                         ,players = nPlayerList2
                         ,lastMove = move }
     burnST
+    missAGoST
     
+-- burn the pile if a burn card or four of a kind are on the top
 burnST = do
     cs <- getGamePropertyST pile
     bcs <- getGamePropertyST burnt
@@ -117,6 +119,17 @@ burnST = do
                               ,burnt   = nBurnt
                               ,players = nPlayers }
 
+-- skip the next player if miss a go card was played
+missAGoST = do
+    cs <- getGamePropertyST pile
+    ps <- getGamePropertyST players
+    if (missAGo cs)
+       then do    
+            let newPs = nextTurn ps
+            modifyGameST $ \st -> st { players = newPs }
+       else
+            return ()
+
 -- make player pick up pile
 pickUpPileST player = do
     cs <- getGamePropertyST pile
@@ -125,6 +138,7 @@ pickUpPileST player = do
         move = (name player) ++ " picked up " ++ (show $ length cs) ++ " cards"
     modifyGameST $ \st -> st { players = pickedUpPs, pile = [], lastMove = move }
 
+-- make player pick up chosen card from their face down hand
 pickUpFromFaceDownST player card = do
     ps <- getGamePropertyST players
     let pickedUpPs = addToNamedPlayersHand player ps (card:[])

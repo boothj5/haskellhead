@@ -4,11 +4,46 @@ import Data.Maybe
 import Game
 import State
 
-------------------------------------------------
---
--- IO Actions, either manipulate the game stateST,
--- or interact with the user
---
+main = do
+    clearScreen
+    putStrLn "Welcome to Haskellhead!"
+    putStrLn ""
+    putStrLn "Enter number of players:"
+    nplayers <- fmap read getLine
+    putStrLn "Enter number of cards per hand:"
+    cards <- fmap read getLine
+
+    createDeckST cards nplayers
+    
+    putStrLn ""
+
+    n <- getGamePropertyST numPlayers
+    playerNames <- forM [1..n] (\a -> do  
+        putStrLn $ "Enter name for player " ++ show a ++ ":"  
+        playerName <- getLine  
+        return playerName)  
+    createPlayersST playerNames 
+
+    dealST
+
+    clearScreen
+    showGame
+    putStrLn ""
+    putStrLn "Press enter to continue"
+    getLine
+
+    swapAll
+    makeFirstMove
+ 
+    nextMove
+
+    playerList <- getGamePropertyST players
+    let shithead = getShithead playerList 
+    if (shithead == Nothing)
+       then putStrLn "ERROR - NO SHITHEAD :/"
+       else putStrLn $ (show $ name $ fromJust shithead) ++ " IS A SHITHEAD!!!!!!!!!!!!"
+       
+-- Functions for game setup
 
 clearScreen = do
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
@@ -26,6 +61,8 @@ getPlayerNames = do
         playerName <- getLine  
         return playerName)  
     createPlayersST playerNames 
+
+-- Functions for swapping cards
 
 doSwap player = do
     let theName = name player
@@ -54,6 +91,8 @@ swapAll = do
             else 
                 return ())
    
+-- Function to perform first move   
+   
 makeFirstMove = do
     playerList <- getGamePropertyST players
     let player = playerWithLowestCardFromList playerList
@@ -62,11 +101,7 @@ makeFirstMove = do
     dealToHandST player (length cards)
     putStrLn $ show (name player) ++ " laid the " ++ show cards
 
-------------------------------------------------
---
--- Main game loop
---
-
+-- Main game loop functions
 
 nextMove = do
     currentPlayer <- moveToNextPlayerST
@@ -115,42 +150,3 @@ cantMove player = do
     putStrLn "Press enter to pick up the pile."
     getLine
     pickUpPileST player
-
-main = do
-    clearScreen
-    putStrLn "Welcome to Haskellhead!"
-    putStrLn ""
-    putStrLn "Enter number of players:"
-    nplayers <- fmap read getLine
-    putStrLn "Enter number of cards per hand:"
-    cards <- fmap read getLine
-
-    createDeckST cards nplayers
-    
-    putStrLn ""
-
-    n <- getGamePropertyST numPlayers
-    playerNames <- forM [1..n] (\a -> do  
-        putStrLn $ "Enter name for player " ++ show a ++ ":"  
-        playerName <- getLine  
-        return playerName)  
-    createPlayersST playerNames 
-
-    dealST
-
-    clearScreen
-    showGame
-    putStrLn ""
-    putStrLn "Press enter to continue"
-    getLine
-
-    swapAll
-    makeFirstMove
- 
-    nextMove
-
-    playerList <- getGamePropertyST players
-    let shithead = getShithead playerList 
-    if (shithead == Nothing)
-       then putStrLn "ERROR - NO SHITHEAD :/"
-       else putStrLn $ (show $ name $ fromJust shithead) ++ " IS A SHITHEAD!!!!!!!!!!!!"
