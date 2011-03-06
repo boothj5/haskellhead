@@ -289,6 +289,18 @@ nextTurn [] = []
 nextTurn (p:[]) = (p:[])
 nextTurn (p:ps) = ps ++ p:[]
 
+getCurrentPlayer :: PlayerCircle -> Maybe Player
+getCurrentPlayer [] = Nothing
+getCurrentPlayer (p:_) = Just p
+
+moveToNextPlayerWithCards :: PlayerCircle -> PlayerCircle
+moveToNextPlayerWithCards [] = []
+moveToNextPlayerWithCards ps = if (hasCards $ fromJust (getCurrentPlayer movedToNext)) 
+                                  then movedToNext 
+                                  else moveToNextPlayerWithCards movedToNext
+    where movedToNext = nextTurn ps
+          
+          
 makeCurrentPlayer :: (Eq a) => a -> [a] -> [a]
 makeCurrentPlayer cp (p:ps) | cp == p = p:ps
                             | otherwise = let newPs = nextTurn (p:ps) in makeCurrentPlayer cp newPs 

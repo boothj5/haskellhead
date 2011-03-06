@@ -16,6 +16,7 @@ module State
 
 import System.IO.Unsafe         (unsafePerformIO)
 import Data.IORef
+import Data.Maybe
 import Control.Monad
 import System.Random
 import System.Random.Shuffle
@@ -147,7 +148,7 @@ pickUpFromFaceDownST player card = do
 -- move on to next player
 moveToNextPlayerST = do
     ps <- getGamePropertyST players
-    let newPs = nextTurn ps
+    let newPs = moveToNextPlayerWithCards ps
     modifyGameST $ \st -> st { players = newPs }
     return (head newPs)
 

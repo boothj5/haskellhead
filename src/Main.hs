@@ -129,6 +129,7 @@ moveFromFaceDown player = do
     if (validMove card thePile)
        then do
            putStrLn $ "Whew you chose the " ++ show card ++ ", press enter,"
+           getLine
            layCardsST player (card:[])
        else do
            putStrLn $ "OH DEAR! You chose the " ++ show card ++ ", press enter,"

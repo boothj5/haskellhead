@@ -1,4 +1,5 @@
 import Test.HUnit
+import Data.Maybe
 import Game
 
 -- test moveing through the players
@@ -119,7 +120,36 @@ testBurnTenOnMoreThanFourCardsReturnsEmpty =
         "Test burn when ten on more than four cards"
         [] (burn pile7))
 
+playerWithCards1 = 
+        ( Player { name = "Monkey", hand = [cardC], faceUp = [cardB], faceDown = [cardA]} )
+playerWithCards2 = 
+        ( Player { name = "Dude", hand = [cardC], faceUp = [cardB], faceDown = [cardA]} )
+playerWithCards3 = 
+        ( Player { name = "Bob", hand = [cardC], faceUp = [cardB], faceDown = [cardA]} )
 
+playerList1 = [playerWithCards1, playerWithCards2, playerWithCards3]
+testNextPlayerWithCardsNextHasCards =
+    TestCase (assertEqual
+        "Test next player with cards is chosen when next player has cards"
+        "Dude" (name $ fromJust ( getCurrentPlayer $ moveToNextPlayerWithCards playerList1 )))
+
+playerList2 = [playerWithCards1, playerWithNoCards, playerWithCards2, playerWithCards3]
+testNextPlayerWithCardsNextButOneHasCards =
+    TestCase (assertEqual
+        "Test next player with cards is chosen when next player but one has cards"
+        "Dude" (name $ fromJust ( getCurrentPlayer $ moveToNextPlayerWithCards playerList2 )))
+
+playerList3 = [playerWithCards1, playerWithNoCards, playerWithNoCards, playerWithCards3]
+testNextPlayerWithCardsNextButTwoHasCards =
+    TestCase (assertEqual
+        "Test next player with cards is chosen when next player but two has cards"
+        "Bob" (name $ fromJust ( getCurrentPlayer $ moveToNextPlayerWithCards playerList3 )))
+
+playerList4 = [playerWithNoCards, playerWithNoCards, playerWithNoCards, playerWithCards3]
+testNextPlayerWithCardsOnlyLastHasCards =
+    TestCase (assertEqual
+        "Test next player with cards is chosen when only last player has cards"
+        "Bob" (name $ fromJust ( getCurrentPlayer $ moveToNextPlayerWithCards playerList4 )))
 
 -- Suite
 tests = TestList [TestLabel "NextTurn" testNextTurn
@@ -136,6 +166,10 @@ tests = TestList [TestLabel "NextTurn" testNextTurn
                 , TestLabel "BurnOnlyFourSixesReturnsEmpty" testBurnOnlyFourSixesReturnsEmpty
                 , TestLabel "BurnFourJakcsOnOtherCardsReturnsEmpty" testBurnFourJakcsOnOtherCardsReturnsEmpty
                 , TestLabel "BurnTenOnMoreThanFourCardsReturnsEmpty" testBurnTenOnMoreThanFourCardsReturnsEmpty
+                , TestLabel "NextPlayerWithCardsNextHasCards" testNextPlayerWithCardsNextHasCards
+                , TestLabel "NextPlayerWithCardsNextButOneHasCards" testNextPlayerWithCardsNextButOneHasCards
+                , TestLabel "NextPlayerWithCardsNextButTwoHasCards" testNextPlayerWithCardsNextButTwoHasCards
+                , TestLabel "NextPlayerWithCardsOnlyLastHasCards" testNextPlayerWithCardsOnlyLastHasCards
                 ]
 
 main = do
