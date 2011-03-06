@@ -151,6 +151,21 @@ testNextPlayerWithCardsOnlyLastHasCards =
         "Test next player with cards is chosen when only last player has cards"
         "Bob" (name $ fromJust ( getCurrentPlayer $ moveToNextPlayerWithCards playerList4 )))
 
+testIntsFromStringOneInt =
+    TestCase (assertEqual
+        "Test string converted to ints when one int in string"
+        [0] (indexesFromString "1"))
+        
+testIntsFromStringTwoInts =
+    TestCase (assertEqual
+        "Test string converted to ints when two ints in string"
+        [0, 2] (indexesFromString "1,3"))
+
+testIntsFromStringThreeInts =
+    TestCase (assertEqual
+        "Test string converted to ints when three ints in string"
+        [0, 12, 3] (indexesFromString "1,13,4"))
+
 -- Suite
 tests = TestList [TestLabel "NextTurn" testNextTurn
                 , TestLabel "CompleteCicle " testCompleteCicle 
@@ -170,6 +185,9 @@ tests = TestList [TestLabel "NextTurn" testNextTurn
                 , TestLabel "NextPlayerWithCardsNextButOneHasCards" testNextPlayerWithCardsNextButOneHasCards
                 , TestLabel "NextPlayerWithCardsNextButTwoHasCards" testNextPlayerWithCardsNextButTwoHasCards
                 , TestLabel "NextPlayerWithCardsOnlyLastHasCards" testNextPlayerWithCardsOnlyLastHasCards
+                , TestLabel "IntsFromStringOneInt" testIntsFromStringOneInt
+                , TestLabel "IntsFromStringTwoInts" testIntsFromStringTwoInts
+                , TestLabel "IntsFromStringThreeInts" testIntsFromStringThreeInts
                 ]
 
 main = do

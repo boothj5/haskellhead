@@ -138,16 +138,16 @@ moveFromFaceDown player = do
            pickUpFromFaceDownST player card 
 
 makeMove player = do
-    putStrLn $ (name player) ++ ", which card do you wish to lay?"
-    cardToPlay <- fmap read getLine
-    let card = getCard player (cardToPlay-1)
+    putStrLn $ (name player) ++ ", which cards do you wish to lay?"
+    str <- getLine
+    let cardsToPlay = getCards player (indexesFromString str)
     currentPile <- getGamePropertyST pile
-    if (not $ validMove card currentPile)
+    if (not $ validMove (head cardsToPlay) currentPile)
         then do 
-            putStrLn $ "You cannot lay the " ++ show card
+            putStrLn $ "You cannot lay " ++ show cardsToPlay
             makeMove player
         else do
-            layCardsST player (card:[])
+            layCardsST player cardsToPlay
             dealToHandST player 1
 
 cantMove player = do

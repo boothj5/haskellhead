@@ -122,12 +122,15 @@ canMoveFromFaceUp :: Player -> Pile -> Bool
 canMoveFromFaceUp p [] = True
 canMoveFromFaceUp p cs = foldl (\can c -> if (validMove c cs) then True else can) False (faceUp p)
 
-getCard :: Player -> Int -> Card
+getCard :: Player -> Integer -> Card
 getCard p n = if (hasCardsInHand p)
-                 then (hand p) !! n
+                 then (hand p) !! (fromIntegral n)
                  else if (hasCardsInFaceUp p)
-                         then (faceUp p) !! n
-                         else (faceDown p) !! n
+                         then (faceUp p) !! (fromIntegral n)
+                         else (faceDown p) !! (fromIntegral n)
+
+getCards :: Player -> [Integer] -> [Card]
+getCards p is = map (getCard p) is
 
 inPlay :: Game -> Bool
 inPlay game = if (playersWithCards (players game) >= 2) then True else False
@@ -224,7 +227,18 @@ swapForNamedPlayer p1 (p2:ps) h f | p1 == p2  = (swapHandWithFaceUp p2 h f) : ps
 charToBoolean :: String -> Bool
 charToBoolean s | (toUpper $ s !! 0) == 'Y'= True
         | otherwise                = False
-        
+
+indexesFromString :: String -> [Integer]
+indexesFromString str = fmap (\x -> (read x) -1) (stringsFromString str)
+
+stringsFromString :: String -> [String]
+stringsFromString str = splitBy (\c -> c == ',') $ str
+
+splitBy :: (a -> Bool) -> [a] -> [[a]]
+splitBy _ [] = []
+splitBy f list = first : splitBy f (dropWhile f rest) where
+  (first, rest) = break f list    
+
 playerWithLowestCard :: Player -> Player -> Player
 playerWithLowestCard p1 p2 = if ((min p1Min p2Min) == p1Min) then p1 else p2
     where p1Min = getLowestCard p1
