@@ -10,7 +10,8 @@ import Data.Char
 data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace 
             deriving (Show, Eq, Ord, Enum)
 data Suit = Hearts | Clubs | Diamonds | Spades deriving (Show, Eq, Ord)
-data Card = Card Rank Suit deriving (Eq, Ord)
+data Card = Card { rank :: Rank, suit :: Suit }
+    deriving (Eq, Ord)
 instance Show Card where
     show (Card rank suit) = (fmap toUpper (show rank)) ++ " of " ++ (fmap toUpper (show suit))
 
@@ -33,23 +34,19 @@ data GameDetails = GameDetails { numPlayers      :: Int
                                 ,numCardsEach    :: Int
                                 ,deck            :: [Card]
                                 ,pile            :: [Card]
+                                ,burnt           :: [Card]
                                 ,lastMove        :: String
                                } 
 instance Show GameDetails where
-    show GameDetails { numPlayers   = n
-            ,players      = p
-            ,numCardsEach = c
-            ,deck         = d 
-            ,pile         = pile
-            ,lastMove     = lm } =  
-                "\nGame Details: " 
+    show game = "\nGame Details: " 
                 ++ "\n"
-                ++ "\nPlayers details: " ++ show p
+                ++ "\nPlayers details: " ++ (show $ players game)
                 ++ "\n" 
-                ++ "\nDeck remaining : " ++ show (length d)
-                ++ "\nPile : " ++ show pile 
+                ++ "\nDeck remaining : " ++ (show $ length $ deck game)
+                ++ "\nPile : " ++ (show $ pile game)
+                ++ "\nBurnt : " ++ (show $ length $ burnt game) 
                 ++ "\n"
-                ++ "\n" ++ lm
+                ++ "\n" ++ (lastMove game)
 
 
 ------------------------------------------------
@@ -281,3 +278,10 @@ makeCurrentPlayer cp (p:ps) | cp == p = p:ps
                             | otherwise = let newPs = nextTurn (p:ps) in makeCurrentPlayer cp newPs 
                                               
 
+burn :: [Card] -> [Card]
+burn [] = []
+burn (c1:[])          = if (rank c1 == burnRank) then [] else (c1:[])
+burn (c1:c2:[])       = if (rank c1 == burnRank) then [] else (c1:c2:[])
+burn (c1:c2:c3:[])    = if (rank c1 == burnRank) then [] else (c1:c2:c3:[])
+burn (c1:c2:c3:c4:cs) = if ((rank c1 == burnRank) || (ranksSame)) then [] else (c1:c2:c3:c4:cs)
+    where ranksSame = (rank c1 == rank c2) && (rank c2 == rank c3) && (rank c3 == rank c4)

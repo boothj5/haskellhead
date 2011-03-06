@@ -40,6 +40,7 @@ gameInPlay = GameDetails { numPlayers      = 3
                        ,numCardsEach    = 0
                        ,deck            = [] 
                        ,pile            = []
+                       ,burnt            = []
                        ,lastMove        = "" }
 
 gameNotInPlay = GameDetails { numPlayers      = 3
@@ -47,6 +48,7 @@ gameNotInPlay = GameDetails { numPlayers      = 3
                        ,numCardsEach    = 0
                        ,deck            = [] 
                        ,pile            = []
+                       ,burnt            = []
                        ,lastMove        = "" }
 
 
@@ -70,6 +72,55 @@ testTwoDeckRequired =
         "Test correct number of decks when two needed"
         2 (numDecksRequired 3 6))
 
+testBurnEmptyReturnsEmpty =
+    TestCase (assertEqual
+        "Test burn empty pile returns empty pile"
+        [] (burn []))
+
+pile1 = [Card Three Diamonds]
+testBurnOneNotTenDoesNotBurn =
+    TestCase (assertEqual
+        "Test burn one card not ten returns same"
+        pile1 (burn pile1))
+   
+pile2 = [Card Six Hearts, Card Two Diamonds, Card Ace Spades]
+testBurnTHreeNotTenDoesNotBurn =
+    TestCase (assertEqual
+        "Test burn three cards no ten return same"
+        pile2 (burn pile2))
+   
+pile3 = [Card Ten Hearts]
+testBurnOnlyTenReturnsEmpty =
+    TestCase (assertEqual
+        "Test burn only ten returns empty"
+        [] (burn pile3))
+
+pile4 = [Card Ten Hearts, Card Ace Diamonds, Card Queen Hearts]
+testBurnTenOnCardsReturnsEmpty =
+    TestCase (assertEqual
+        "Test burn when ten on other cards"
+        [] (burn pile4))
+
+pile5 = [Card Six Hearts, Card Six Spades, Card Six Clubs, Card Six Diamonds]
+testBurnOnlyFourSixesReturnsEmpty =
+    TestCase (assertEqual
+        "Test burn just four sixes returns empty"
+        [] (burn pile5))
+
+pile6 = [Card Jack Spades, Card Jack Hearts, Card Jack Clubs, Card Jack Diamonds, Card Nine Spades]
+testBurnFourJakcsOnOtherCardsReturnsEmpty =
+    TestCase (assertEqual
+        "Test burn four jacks on other cards returns empty"
+        [] (burn pile6))
+
+pile7 = [Card Ten Hearts] ++ pile1 ++ pile2 ++ [Card Nine Spades, Card Ace Hearts]
+testBurnTenOnMoreThanFourCardsReturnsEmpty =
+    TestCase (assertEqual
+        "Test burn when ten on more than four cards"
+        [] (burn pile7))
+
+
+
 -- Suite
 tests = TestList [TestLabel "NextTurn" testNextTurn
                 , TestLabel "CompleteCicle " testCompleteCicle 
@@ -77,6 +128,14 @@ tests = TestList [TestLabel "NextTurn" testNextTurn
                 , TestLabel "NotInPlayWhenOnePlayerHasCards" testNotInPlayWhenOnePlayerHasCards
                 , TestLabel "OneDeckRequired" testOneDeckRequired
                 , TestLabel "TwoDeckRequired" testTwoDeckRequired
+                , TestLabel "BurnEmptyReturnsEmpty" testBurnEmptyReturnsEmpty
+                , TestLabel "BurnOneNotTenDoesNotBurn" testBurnOneNotTenDoesNotBurn
+                , TestLabel "BurnTHreeNotTenDoesNotBurn" testBurnTHreeNotTenDoesNotBurn
+                , TestLabel "BurnOnlyTenReturnsEmpty" testBurnOnlyTenReturnsEmpty
+                , TestLabel "BurnTenOnCardsReturnsEmpty" testBurnTenOnCardsReturnsEmpty
+                , TestLabel "BurnOnlyFourSixesReturnsEmpty" testBurnOnlyFourSixesReturnsEmpty
+                , TestLabel "BurnFourJakcsOnOtherCardsReturnsEmpty" testBurnFourJakcsOnOtherCardsReturnsEmpty
+                , TestLabel "BurnTenOnMoreThanFourCardsReturnsEmpty" testBurnTenOnMoreThanFourCardsReturnsEmpty
                 ]
 
 main = do

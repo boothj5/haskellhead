@@ -33,6 +33,7 @@ emptyST = GameDetails { numPlayers      = 0
                        ,numCardsEach    = 0
                        ,deck            = [] 
                        ,pile            = []
+                       ,burnt           = []
                        ,lastMove        = "" }
 
 -- Global state variable
@@ -96,10 +97,24 @@ layCardsST player cards = do
                                  else removeFromNamedPlayersFaceDown player ps cards
         nPlayerList2 = makeCurrentPlayer player nPlayerList
         move = (name player) ++ " laid the " ++ show cards
+
     modifyGameST $ \st -> 
                     st { pile    = newPile 
                         ,players = nPlayerList2
                         ,lastMove = move }
+    burnST
+    
+burnST = do
+    cs <- getGamePropertyST pile
+    bcs <- getGamePropertyST burnt
+    ps <- getGamePropertyST players
+    let nPile = burn cs
+        nBurnt = if (null nPile) then cs ++ bcs else bcs
+        nPlayers = if (null nPile) then (last ps):(init ps) else ps
+        
+    modifyGameST $ \st -> st { pile    = nPile
+                              ,burnt   = nBurnt
+                              ,players = nPlayers }
 
 -- make player pick up pile
 pickUpPileST player = do
