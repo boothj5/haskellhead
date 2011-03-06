@@ -11,6 +11,7 @@ module State
 , dealST
 , moveToNextPlayerST
 , pickUpPileST
+, pickUpFromFaceDownST
 ) where
 
 import System.IO.Unsafe         (unsafePerformIO)
@@ -123,6 +124,12 @@ pickUpPileST player = do
     let pickedUpPs = addToNamedPlayersHand player ps cs
         move = (name player) ++ " picked up " ++ (show $ length cs) ++ " cards"
     modifyGameST $ \st -> st { players = pickedUpPs, pile = [], lastMove = move }
+
+pickUpFromFaceDownST player card = do
+    ps <- getGamePropertyST players
+    let pickedUpPs = addToNamedPlayersHand player ps (card:[])
+        pickedUpPs2 = removeFromNamedPlayersFaceDown player ps (card:[]) 
+    modifyGameST $ \st -> st { players = pickedUpPs2 }
 
 -- move on to next player
 moveToNextPlayerST = do

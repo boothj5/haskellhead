@@ -1,5 +1,6 @@
 import Data.IORef
 import Control.Monad
+import Data.Maybe
 import Game
 import State
 
@@ -61,6 +62,41 @@ makeFirstMove = do
     dealToHandST player (length cards)
     putStrLn $ show (name player) ++ " laid the " ++ show cards
 
+------------------------------------------------
+--
+-- Main game loop
+--
+
+
+nextMove = do
+    currentPlayer <- moveToNextPlayerST
+    thePile <- getGamePropertyST pile
+    clearScreen
+    showGame
+    if (playingFromFaceDown currentPlayer)
+        then moveFromFaceDown currentPlayer
+        else if (canMove currentPlayer thePile)
+                then makeMove currentPlayer
+                else cantMove currentPlayer
+    game <- getGameST
+    if (inPlay game)
+        then nextMove
+        else return ()
+
+moveFromFaceDown player = do
+    thePile <- getGamePropertyST pile
+    putStrLn $ (name player) ++ ", which card do you wish choose?"
+    cardToPlay <- fmap read getLine
+    let card = getCard player (cardToPlay-1)
+    if (validMove card thePile)
+       then do
+           putStrLn $ "Whew you chose the " ++ show card ++ ", press enter,"
+           layCardsST player (card:[])
+       else do
+           putStrLn $ "OH DEAR! You chose the " ++ show card ++ ", press enter,"
+           pickUpPileST player
+           pickUpFromFaceDownST player card 
+
 makeMove player = do
     putStrLn $ (name player) ++ ", which card do you wish to lay?"
     cardToPlay <- fmap read getLine
@@ -73,38 +109,23 @@ makeMove player = do
         else do
             layCardsST player (card:[])
             dealToHandST player 1
-            return ()
 
 cantMove player = do
     putStrLn $ "OH DEAR! " ++ (name player) ++ ", you cannot move."
     putStrLn "Press enter to pick up the pile."
     getLine
     pickUpPileST player
-    nextMove
-
-nextMove = do
-    currentPlayer <- moveToNextPlayerST
-    thePile <- getGamePropertyST pile
-    clearScreen
-    showGame
-    if (canMove currentPlayer thePile)
-        then makeMove currentPlayer
-        else cantMove currentPlayer
-    game <- getGameST
-    if (inPlay game)
-        then nextMove
-        else return ()
 
 main = do
     clearScreen
     putStrLn "Welcome to Haskellhead!"
     putStrLn ""
     putStrLn "Enter number of players:"
-    players <- fmap read getLine
+    nplayers <- fmap read getLine
     putStrLn "Enter number of cards per hand:"
     cards <- fmap read getLine
 
-    createDeckST cards players
+    createDeckST cards nplayers
     
     putStrLn ""
 
@@ -127,3 +148,9 @@ main = do
     makeFirstMove
  
     nextMove
+
+    playerList <- getGamePropertyST players
+    let shithead = getShithead playerList 
+    if (shithead == Nothing)
+       then putStrLn "ERROR - NO SHITHEAD :/"
+       else putStrLn $ (show $ name $ fromJust shithead) ++ " IS A SHITHEAD!!!!!!!!!!!!"

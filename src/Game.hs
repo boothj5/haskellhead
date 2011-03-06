@@ -1,6 +1,7 @@
 module Game where 
 
 import Data.Char
+import Data.Maybe
 
 ------------------------------------------------
 
@@ -135,6 +136,9 @@ hasCardsInFaceUp player = (length $ faceUp player) > 0
 
 hasCardsInFaceDown :: Player -> Bool
 hasCardsInFaceDown player = (length $ faceDown player) > 0
+
+playingFromFaceDown :: Player -> Bool
+playingFromFaceDown p = (not $ hasCardsInHand p) && (not $ hasCardsInFaceUp p)
 
 numDecksRequired :: (Integral t, Integral a) => a -> a -> t
 numDecksRequired cs ps = ( div52 $ fromIntegral $ total cs ps ) + ( remDeck $ total cs ps )
@@ -282,3 +286,6 @@ burn (c1:c2:c3:[])    = if (rank c1 == burnRank) then [] else (c1:c2:c3:[])
 burn (c1:c2:c3:c4:cs) = if ((rank c1 == burnRank) || (ranksSame)) then [] else (c1:c2:c3:c4:cs)
     where ranksSame = (rank c1 == rank c2) && (rank c2 == rank c3) && (rank c3 == rank c4)
           
+getShithead :: PlayerCircle -> Maybe Player
+getShithead [] = Nothing
+getShithead (p:ps) = if (hasCards p) then (Just p) else getShithead ps
