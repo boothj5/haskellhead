@@ -1,5 +1,5 @@
 module State 
-( getGameDetailsST
+( getGameST
 , getGamePropertyST
 , createDeckST
 , createPlayersST
@@ -27,8 +27,8 @@ import Game
 --
 
 -- Initial state
-emptyST :: GameDetails
-emptyST = GameDetails { numPlayers      = 0
+emptyST :: Game
+emptyST = Game { numPlayers      = 0
                        ,players         = []
                        ,numCardsEach    = 0
                        ,deck            = [] 
@@ -37,20 +37,20 @@ emptyST = GameDetails { numPlayers      = 0
                        ,lastMove        = "" }
 
 -- Global state variable
-stateST :: IORef GameDetails
+stateST :: IORef Game
 stateST = unsafePerformIO $ newIORef emptyST
 {-# NOINLINE stateST #-}
    
 -- Access a component of the state with a projection function
-getGamePropertyST :: (GameDetails -> a) -> IO a
+getGamePropertyST :: (Game -> a) -> IO a
 getGamePropertyST f = withGameST (return . f)
    
 -- Perform a (read-only) IO action on the state
-withGameST :: (GameDetails -> IO a) -> IO a
+withGameST :: (Game -> IO a) -> IO a
 withGameST f = readIORef stateST >>= f
 
 -- Modify the game state
-modifyGameST :: (GameDetails -> GameDetails) -> IO ()
+modifyGameST :: (Game -> Game) -> IO ()
 modifyGameST  f = modifyIORef stateST f
 
 ------------------------------------------------
@@ -60,7 +60,7 @@ modifyGameST  f = modifyIORef stateST f
 --
 
 -- get the game state
-getGameDetailsST = do
+getGameST = do
     readIORef stateST
    
 -- create the deck of correct size

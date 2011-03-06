@@ -20,27 +20,27 @@ ace = Card Ace Diamonds
 testBurnCardIsSpecial = 
     TestCase (assertBool
         "Test burn card is special card"
-        (specialCard (Card burnRank Hearts)))
+        (layOnAnythingCard (Card burnRank Hearts)))
 
 testInvisibleCardIsSpecial = 
     TestCase (assertBool
         "Test invisble card is special card"
-        (specialCard (Card invisibleRank Hearts)))
+        (layOnAnythingCard (Card invisibleRank Hearts)))
 
 testResetCardIsSpecial = 
     TestCase (assertBool
         "Test reset card is special card"
-        (specialCard (Card resetRank Hearts)))
+        (layOnAnythingCard (Card resetRank Hearts)))
                             
 testThreeNotSpecial = 
     TestCase (assertBool
         "Test three is not special"
-        (not $ specialCard (Card Three Diamonds)))
+        (not $ layOnAnythingCard (Card Three Diamonds)))
 
 testAceNotSpecial = 
     TestCase (assertBool
         "Test ace is not special"
-        (not $ specialCard (Card Ace Spades)))
+        (not $ layOnAnythingCard (Card Ace Spades)))
 
 
 -- Test valid moves

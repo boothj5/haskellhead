@@ -1,43 +1,52 @@
 module Game where 
 
 import Data.Char
+
 ------------------------------------------------
 
 --
 -- Data types
 --
+type Pile = [Card]
+type Hand = [Card]
+type Deck = [Card]
+type PlayerCircle = [Player]
 
 data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace 
             deriving (Show, Eq, Ord, Enum)
+
 data Suit = Hearts | Clubs | Diamonds | Spades deriving (Show, Eq, Ord)
+
 data Card = Card { rank :: Rank, suit :: Suit }
     deriving (Eq, Ord)
+
 instance Show Card where
     show (Card rank suit) = (fmap toUpper (show rank)) ++ " of " ++ (fmap toUpper (show suit))
 
 data Player = Player { 
                 name         :: String
-               ,hand         :: [Card]
-               ,faceUp       :: [Card]
-               ,faceDown     :: [Card] }
+               ,hand         :: Hand
+               ,faceUp       :: Hand
+               ,faceDown     :: Hand }
+
 instance Show Player where
-    show (Player {name=n, hand=h, faceUp=u, faceDown=d}) = "\n\nplayer name: " ++ n
-                                                           ++ "\nhand: " ++ show h
-                                                           ++ "\nfaceUp: " ++ show u
-                                                           ++ "\nfaceDown: " ++ show d
+    show p = "\n\nplayer name: " ++ name p
+                ++ "\nhand: " ++ (show $ hand p)
+                ++ "\nfaceUp: " ++ (show $ faceUp p)
+                ++ "\nfaceDown: " ++ (show $ faceDown p)
+
 instance Eq Player where
     p1 == p2 = (name p1) == (name p2)
 
--- Used to represent the state of the game
-data GameDetails = GameDetails { numPlayers      :: Int
-                                ,players         :: [Player]
+data Game = Game { numPlayers      :: Int
+                                ,players         :: PlayerCircle
                                 ,numCardsEach    :: Int
-                                ,deck            :: [Card]
-                                ,pile            :: [Card]
+                                ,deck            :: Deck
+                                ,pile            :: Pile
                                 ,burnt           :: [Card]
                                 ,lastMove        :: String
                                } 
-instance Show GameDetails where
+instance Show Game where
     show game = "\nGame Details: " 
                 ++ "\n"
                 ++ "\nPlayers details: " ++ (show $ players game)
@@ -54,8 +63,6 @@ instance Show GameDetails where
 -- game functions
 --
 
--- determine the number of decks of cards required in game, 
--- given number of players and number of cards per hand
 burnRank :: Rank
 burnRank = Ten
 
@@ -71,13 +78,13 @@ resetRank = Two
 layOnAnyThingRanks :: [Rank]
 layOnAnyThingRanks = [burnRank, invisibleRank, resetRank]
 
-specialCard :: Card -> Bool
-specialCard (Card rank suit) = rank `elem` layOnAnyThingRanks
+layOnAnythingCard :: Card -> Bool
+layOnAnythingCard (Card rank suit) = rank `elem` layOnAnyThingRanks
 
-equalsRank :: Card -> Card -> Bool
-equalsRank (Card r1 _) (Card r2 _) = r1 == r2
+ranksAreEqual :: Card -> Card -> Bool
+ranksAreEqual (Card r1 _) (Card r2 _) = r1 == r2
 
-validMove :: Card -> [Card] -> Bool
+validMove :: Card -> Pile -> Bool
 validMove c              []                  = True
 validMove (Card Two   _) _                   = True
 validMove (Card Seven _) _                   = True
@@ -86,7 +93,7 @@ validMove c1             ((Card Seven _):cs) = validMove c1 cs
 validMove (Card r1    _) ((Card r2 _)   :_)  | r1 >= r2  = True
                                              | otherwise = False
 
-canMove :: Player -> [Card] -> Bool
+canMove :: Player -> Pile -> Bool
 canMove p [] = True
 canMove p cs = if (hasCardsInHand p) 
                     then canMoveFromHand p cs 
@@ -94,11 +101,11 @@ canMove p cs = if (hasCardsInHand p)
                             then canMoveFromFaceUp p cs
                             else False
 
-canMoveFromHand :: Player -> [Card] -> Bool
+canMoveFromHand :: Player -> Pile -> Bool
 canMoveFromHand p [] = True
 canMoveFromHand p cs = foldl (\can c -> if (validMove c cs) then True else can) False (hand p)
 
-canMoveFromFaceUp :: Player -> [Card] -> Bool
+canMoveFromFaceUp :: Player -> Pile -> Bool
 canMoveFromFaceUp p [] = True
 canMoveFromFaceUp p cs = foldl (\can c -> if (validMove c cs) then True else can) False (faceUp p)
 
@@ -109,10 +116,10 @@ getCard p n = if (hasCardsInHand p)
                          then (faceUp p) !! n
                          else (faceDown p) !! n
 
-inPlay :: GameDetails -> Bool
+inPlay :: Game -> Bool
 inPlay game = if (playersWithCards (players game) >= 2) then True else False
 
-playersWithCards :: [Player] -> Integer
+playersWithCards :: PlayerCircle -> Integer
 playersWithCards [] = 0
 playersWithCards (p:ps) | hasCards p = 1 + playersWithCards ps
                         | otherwise  = playersWithCards ps
@@ -135,25 +142,19 @@ numDecksRequired cs ps = ( div52 $ fromIntegral $ total cs ps ) + ( remDeck $ to
           remDeck n = if n `mod` 52 > 0 then 1 else 0
           total n m = n * m * 3
           
--- return a new unshuffled deck of cards
-newDeck :: [Card]
+newDeck :: Deck
 newDeck = [Card rank suit | suit <- [Hearts, Clubs, Diamonds, Spades], rank <- [Two .. Ace]]
 
--- returns a number of decks as one, i.e. with two decks, 
--- every card will be represented twice
-newDeckWithEnoughCards :: Int -> [Card]
+newDeckWithEnoughCards :: Int -> Deck
 newDeckWithEnoughCards 0 = []
 newDeckWithEnoughCards 1 = newDeck
 newDeckWithEnoughCards n = newDeck ++ (newDeckWithEnoughCards $ n-1)
 
--- Given a list of names will return a list of players with those names
-createPlayers :: [String] -> [Player]
+createPlayers :: [String] -> PlayerCircle
 createPlayers [] = []
 createPlayers (x:[]) = ( Player { name = x, hand = [], faceUp = [], faceDown = []} ) : []
 createPlayers (x:xs) = ( Player { name = x, hand = [], faceUp = [], faceDown = []} ) : createPlayers xs
 
--- Given a player and a card, will return a new player, 
--- with every thing the same but the Card added to one of their hands
 addToPlayersHand :: Player -> [Card] -> Player
 addToPlayersHand p cs = Player { name        = ( name p )
                                ,hand        = ( cs ++ (hand p) )
@@ -173,21 +174,17 @@ addToPlayersFaceDown p c = Player { name        = ( name p )
                                    ,faceUp      = ( faceUp p )
                                    ,faceDown    = ( c : (faceDown p) ) }
                                    
--- Given a player, a list of players, and a card, returns
--- a list of players with everything the same but the card
--- added to one of the players hands, whos name matches that of the player 
--- passed in
-addToNamedPlayersHand :: Player -> [Player] -> [Card] -> [Player]
+addToNamedPlayersHand :: Player -> PlayerCircle -> [Card] -> PlayerCircle
 addToNamedPlayersHand _ []     _   = []
 addToNamedPlayersHand p1 (p2:ps) cs | p1 == p2    = (addToPlayersHand p2 cs) : ps
                                    | otherwise   = p2 : (addToNamedPlayersHand p1 ps cs)
 
-addToNamedPlayersFaceUp :: Player -> [Player] -> Card -> [Player]
+addToNamedPlayersFaceUp :: Player -> PlayerCircle -> Card -> PlayerCircle
 addToNamedPlayersFaceUp _ []     _   = []
 addToNamedPlayersFaceUp p1 (p2:ps) c | p1 == p2    = (addToPlayersFaceUp p2 c) : ps
                                      | otherwise   = p2 : (addToNamedPlayersFaceUp p1 ps c)
 
-addToNamedPlayersFaceDown :: Player -> [Player] -> Card -> [Player]
+addToNamedPlayersFaceDown :: Player -> PlayerCircle -> Card -> PlayerCircle
 addToNamedPlayersFaceDown _ []     _   = []
 addToNamedPlayersFaceDown p1 (p2:ps) c | p1 == p2    = (addToPlayersFaceDown p2 c) : ps
                                        | otherwise   = p2 : (addToNamedPlayersFaceDown p1 ps c)
@@ -200,7 +197,7 @@ swapHandWithFaceUp p h f = Player { name     = ( name p )
     where handCard   = (hand p) !! h
           faceUpCard = (faceUp p) !! f
           
-swapForNamedPlayer :: Player -> [Player] -> Int -> Int -> [Player]
+swapForNamedPlayer :: Player -> PlayerCircle -> Int -> Int -> PlayerCircle
 swapForNamedPlayer p1 (p2:ps) h f | p1 == p2  = (swapHandWithFaceUp p2 h f) : ps
                                   | otherwise = p2 : (swapForNamedPlayer p1 ps h f)
 
@@ -213,16 +210,16 @@ playerWithLowestCard p1 p2 = if ((min p1Min p2Min) == p1Min) then p1 else p2
     where p1Min = getLowestCard p1
           p2Min = getLowestCard p2
 
-playerWithLowestCardFromList :: [Player] -> Player
+playerWithLowestCardFromList :: PlayerCircle -> Player
 playerWithLowestCardFromList [] = error "No players"
 playerWithLowestCardFromList (player:[]) = player
 playerWithLowestCardFromList (player:rest) = playerWithLowestCard player (playerWithLowestCardFromList rest)
 
 getLowestCard :: Player -> Card
-getLowestCard p = minimum $ filter (\c -> not $ specialCard c) (hand p)
+getLowestCard p = minimum $ filter (\c -> not $ layOnAnythingCard c) (hand p)
 
 getLowestCards :: Player -> [Card]
-getLowestCards p = lowestCard : filter (\c -> equalsRank lowestCard c) handMinusLowest
+getLowestCards p = lowestCard : filter (\c -> ranksAreEqual lowestCard c) handMinusLowest
     where playersHand = hand p
           lowestCard = getLowestCard p
           handMinusLowest = filter (\c -> lowestCard /= c) playersHand
@@ -234,7 +231,7 @@ removeFromPlayersHand p cs = Player { name = ( name p )
                                      ,faceUp = ( faceUp p )
                                      ,faceDown = ( faceDown p ) }
 
-removeFromNamedPlayersHand :: Player -> [Player] -> [Card] -> [Player]
+removeFromNamedPlayersHand :: Player -> PlayerCircle -> [Card] -> PlayerCircle
 removeFromNamedPlayersHand _ [] _        = []
 removeFromNamedPlayersHand _ ps []       = ps
 removeFromNamedPlayersHand p1 (p2:ps) cs | p1 == p2  = (removeFromPlayersHand p2 cs) : ps
@@ -248,7 +245,7 @@ removeFromPlayersFaceUp p cs = Player { name = ( name p )
                                      ,faceUp = ( filter (\c -> c `notElem` cs) $ faceUp p )
                                      ,faceDown = ( faceDown p ) }
 
-removeFromNamedPlayersFaceUp :: Player -> [Player] -> [Card] -> [Player]
+removeFromNamedPlayersFaceUp :: Player -> PlayerCircle -> [Card] -> PlayerCircle
 removeFromNamedPlayersFaceUp _ [] _        = []
 removeFromNamedPlayersFaceUp _ ps []       = ps
 removeFromNamedPlayersFaceUp p1 (p2:ps) cs | p1 == p2  = (removeFromPlayersFaceUp p2 cs) : ps
@@ -261,12 +258,11 @@ removeFromPlayersFaceDown p cs = Player { name = ( name p )
                                      ,faceUp = ( faceUp p )
                                      ,faceDown = ( filter (\c -> c `notElem` cs) $ faceDown p ) }
 
-removeFromNamedPlayersFaceDown :: Player -> [Player] -> [Card] -> [Player]
+removeFromNamedPlayersFaceDown :: Player -> PlayerCircle -> [Card] -> PlayerCircle
 removeFromNamedPlayersFaceDown _ [] _        = []
 removeFromNamedPlayersFaceDown _ ps []       = ps
 removeFromNamedPlayersFaceDown p1 (p2:ps) cs | p1 == p2  = (removeFromPlayersFaceDown p2 cs) : ps
                                          | otherwise = p2 : (removeFromNamedPlayersFaceDown p1 ps cs)
-
 
 nextTurn :: [a] -> [a]
 nextTurn [] = []
@@ -278,10 +274,11 @@ makeCurrentPlayer cp (p:ps) | cp == p = p:ps
                             | otherwise = let newPs = nextTurn (p:ps) in makeCurrentPlayer cp newPs 
                                               
 
-burn :: [Card] -> [Card]
+burn :: Pile -> Pile
 burn [] = []
 burn (c1:[])          = if (rank c1 == burnRank) then [] else (c1:[])
 burn (c1:c2:[])       = if (rank c1 == burnRank) then [] else (c1:c2:[])
 burn (c1:c2:c3:[])    = if (rank c1 == burnRank) then [] else (c1:c2:c3:[])
 burn (c1:c2:c3:c4:cs) = if ((rank c1 == burnRank) || (ranksSame)) then [] else (c1:c2:c3:c4:cs)
     where ranksSame = (rank c1 == rank c2) && (rank c2 == rank c3) && (rank c3 == rank c4)
+          

@@ -15,7 +15,7 @@ clearScreen = do
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
 showGame = do
-    game <- getGameDetailsST
+    game <- getGameST
     putStrLn $ show game
 
 getPlayerNames = do   
@@ -90,7 +90,7 @@ nextMove = do
     if (canMove currentPlayer thePile)
         then makeMove currentPlayer
         else cantMove currentPlayer
-    game <- getGameDetailsST
+    game <- getGameST
     if (inPlay game)
         then nextMove
         else return ()

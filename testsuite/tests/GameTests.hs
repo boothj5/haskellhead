@@ -35,7 +35,7 @@ payerWithCardsInAllHands =
 twoPlayersWithCards = [playerWithFaceDownCardsOnly, payerWithCardsInAllHands, playerWithNoCards]
 onlyOnePlayerWithCards = [playerWithFaceDownCardsOnly, playerWithNoCards, playerWithNoCards]
 
-gameInPlay = GameDetails { numPlayers      = 3
+gameInPlay = Game { numPlayers      = 3
                        ,players         = twoPlayersWithCards
                        ,numCardsEach    = 0
                        ,deck            = [] 
@@ -43,7 +43,7 @@ gameInPlay = GameDetails { numPlayers      = 3
                        ,burnt            = []
                        ,lastMove        = "" }
 
-gameNotInPlay = GameDetails { numPlayers      = 3
+gameNotInPlay = Game { numPlayers      = 3
                        ,players         = onlyOnePlayerWithCards
                        ,numCardsEach    = 0
                        ,deck            = [] 
