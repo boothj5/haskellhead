@@ -2,6 +2,7 @@ module Game where
 
 import Data.Char
 import Data.Maybe
+import Data.List
 
 ------------------------------------------------
 
@@ -31,10 +32,13 @@ data Player = Player {
                ,faceDown     :: Hand }
 
 instance Show Player where
-    show p = "\n\nplayer name: " ++ name p
-                ++ "\nhand: " ++ (show $ hand p)
-                ++ "\nfaceUp: " ++ (show $ faceUp p)
-                ++ "\nfaceDown: " ++ (show $ faceDown p)
+    show p =
+            "-----------------------------------------\n" ++ 
+            "PLAYER:" ++ (name p) ++ "\n" ++
+            "-----------------------------------------\n" ++ 
+            "HAND:      " ++ (showHand (hand p) False) ++ "\n" ++
+            "FACE UP:   " ++ (showHand (faceUp p) False) ++ "\n" ++
+            "FACE DOWN: " ++ (showHand (faceDown p) True) ++ "\n"
 
 instance Eq Player where
     p1 == p2 = (name p1) == (name p2)
@@ -48,21 +52,29 @@ data Game = Game { numPlayers      :: Int
                                 ,lastMove        :: String
                                } 
 instance Show Game where
-    show game = "\nGame Details: " 
-                ++ "\n"
-                ++ "\nPlayers details: " ++ (show $ players game)
-                ++ "\n" 
-                ++ "\nDeck remaining : " ++ (show $ length $ deck game)
-                ++ "\nPile : " ++ (show $ pile game)
-                ++ "\nBurnt : " ++ (show $ length $ burnt game) 
-                ++ "\n"
-                ++ "\n" ++ (lastMove game)
-
+    show game = if (null (lastMove game)) 
+                   then playersString 
+                   else playersString ++ "\n" ++ (lastMove game)
+                    where playersString = "\nPile : " ++ (show $ pile game)
+                            ++ "\n\n" ++ (show $ length $ deck game) ++ " remaining on deck" 
+                            ++ "\n\n" ++ (show $ length $ burnt game) ++ " burnt"  
+                            ++ "\n\n" ++ (showPlayers $ players game)
 
 ------------------------------------------------
 --
 -- game functions
 --
+
+showPlayers :: PlayerCircle -> String
+showPlayers [] = ""
+showPlayers (p:ps) = show p ++ "\n" ++ showPlayers ps
+
+showHand :: Hand -> Bool -> String
+showHand [] _ = ""
+showHand cs False = foldl (\acc card -> 
+                            acc ++ (show card) ++ "(" ++ 
+                            (show ((fromJust (elemIndex card cs)+1))) ++ "), ") "" cs
+showHand cs True = foldl (\acc card -> acc ++ "****, ") "" cs
 
 burnRank :: Rank
 burnRank = Ten
@@ -159,9 +171,13 @@ createPlayers [] = []
 createPlayers (x:[]) = ( Player { name = x, hand = [], faceUp = [], faceDown = []} ) : []
 createPlayers (x:xs) = ( Player { name = x, hand = [], faceUp = [], faceDown = []} ) : createPlayers xs
 
+getPlayer :: String -> PlayerCircle -> Maybe Player
+getPlayer nameStr [] = Nothing
+getPlayer nameStr ps = find (\p -> name p == nameStr) ps
+
 addToPlayersHand :: Player -> [Card] -> Player
 addToPlayersHand p cs = Player { name        = ( name p )
-                               ,hand        = ( cs ++ (hand p) )
+                               ,hand        = ( sort $ cs ++ (hand p) )
                                ,faceUp      = ( faceUp p )
                                ,faceDown    = ( faceDown p ) }
 
@@ -195,7 +211,7 @@ addToNamedPlayersFaceDown p1 (p2:ps) c | p1 == p2    = (addToPlayersFaceDown p2 
 
 swapHandWithFaceUp :: Player -> Int -> Int -> Player
 swapHandWithFaceUp p h f = Player { name     = ( name p )
-                                   ,hand     = (map (\c -> if (handCard == c) then faceUpCard else c) (hand p))
+                                   ,hand     = sort $ (map (\c -> if (handCard == c) then faceUpCard else c) (hand p))
                                    ,faceUp   = (map (\c -> if (faceUpCard == c) then handCard else c) (faceUp p))
                                    ,faceDown = ( faceDown p ) }
     where handCard   = (hand p) !! h

@@ -8,15 +8,13 @@ main = do
     clearScreen
     putStrLn "Welcome to Haskellhead!"
     putStrLn ""
-    putStrLn "Enter number of players:"
+    putStrLn "How many players?"
     nplayers <- fmap read getLine
-    putStrLn "Enter number of cards per hand:"
+    putStrLn "How many cards each?"
     cards <- fmap read getLine
 
     createDeckST cards nplayers
     
-    putStrLn ""
-
     n <- getGamePropertyST numPlayers
     playerNames <- forM [1..n] (\a -> do  
         putStrLn $ "Enter name for player " ++ show a ++ ":"  
@@ -28,8 +26,7 @@ main = do
 
     clearScreen
     showGame
-    putStrLn ""
-    putStrLn "Press enter to continue"
+    putStrLn "Cards dealt, press enter:"
     getLine
 
     swapAll
@@ -71,17 +68,23 @@ doSwap player = do
     putStrLn $ theName ++ ", select a face up card to swap:"
     faceUpCardToSwap <- fmap read getLine
     swapCardsST player (handCardToSwap-1) (faceUpCardToSwap-1)
+    clearScreen
+    playerList <- getGamePropertyST players
+    let newPlayer = fromJust $ getPlayer (name player) playerList
+    putStrLn $ show newPlayer
     putStrLn $ theName ++ ", do you want to swap more cards?"
     swapMore <- getLine
     if (charToBoolean swapMore) 
         then
-            doSwap player
+            doSwap newPlayer
         else 
             return ()
 
 swapAll = do
     playerList <- getGamePropertyST players
     forM playerList (\player -> do
+        clearScreen
+        putStrLn $ show player
         let theName = name player
         putStrLn $ theName ++ ", do you want to swap cards?"
         swap <- getLine
@@ -129,6 +132,7 @@ moveFromFaceDown player = do
            layCardsST player (card:[])
        else do
            putStrLn $ "OH DEAR! You chose the " ++ show card ++ ", press enter,"
+           getLine
            pickUpPileST player
            pickUpFromFaceDownST player card 
 

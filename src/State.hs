@@ -85,7 +85,6 @@ swapCardsST player cardFromHand cardFromFaceUp = do
     let swappedPlayers = swapForNamedPlayer player playerList cardFromHand cardFromFaceUp
     modifyGameST $ \st -> st { players = swappedPlayers }
 
-
 -- Lay the cards from the players hand
 layCardsST player cards = do
     ps <- getGamePropertyST players
