@@ -142,7 +142,7 @@ pickUpPileST player = do
 pickUpFromFaceDownST player card = do
     ps <- getGamePropertyST players
     let pickedUpPs = addToNamedPlayersHand player ps (card:[])
-        pickedUpPs2 = removeFromNamedPlayersFaceDown player ps (card:[]) 
+        pickedUpPs2 = removeFromNamedPlayersFaceDown player pickedUpPs (card:[]) 
     modifyGameST $ \st -> st { players = pickedUpPs2 }
 
 -- move on to next player
