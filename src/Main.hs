@@ -18,8 +18,7 @@ main = do
     n <- getGamePropertyST numPlayers
     playerNames <- forM [1..n] (\a -> do  
         putStrLn $ "Enter name for player " ++ show a ++ ":"  
-        playerName <- getLine  
-        return playerName)  
+        getLine)  
     createPlayersST playerNames 
 
     dealST
@@ -36,9 +35,9 @@ main = do
 
     playerList <- getGamePropertyST players
     let shithead = getShithead playerList 
-    if (shithead == Nothing)
+    if shithead == Nothing
        then putStrLn "ERROR - NO SHITHEAD :/"
-       else putStrLn $ (show $ name $ fromJust shithead) ++ " IS A SHITHEAD!!!!!!!!!!!!"
+       else putStrLn $ show (name $ fromJust shithead) ++ " IS A SHITHEAD!!!!!!!!!!!!"
        
 -- Functions for game setup
 
@@ -49,14 +48,13 @@ clearScreen = do
 
 showGame = do
     game <- getGameST
-    putStrLn $ show game
+    (print game)
 
 getPlayerNames = do   
     n <- getGamePropertyST numPlayers
     playerNames <- forM [1..n] (\a -> do  
         putStrLn $ "Enter name for player " ++ show a ++ ":"  
-        playerName <- getLine  
-        return playerName)  
+        getLine)  
     createPlayersST playerNames 
 
 -- Functions for swapping cards
@@ -71,28 +69,22 @@ doSwap player = do
     clearScreen
     playerList <- getGamePropertyST players
     let newPlayer = fromJust $ getPlayer (name player) playerList
-    putStrLn $ show newPlayer
+    (print newPlayer)
     putStrLn $ theName ++ ", do you want to swap more cards?"
     swapMore <- getLine
-    if (charToBoolean swapMore) 
-        then
-            doSwap newPlayer
-        else 
-            return ()
+    (when (charToBoolean swapMore) $ 
+        doSwap newPlayer)
 
 swapAll = do
     playerList <- getGamePropertyST players
     forM playerList (\player -> do
         clearScreen
-        putStrLn $ show player
+        (print player)
         let theName = name player
         putStrLn $ theName ++ ", do you want to swap cards?"
         swap <- getLine
-        if (charToBoolean swap) 
-            then 
-                doSwap player
-            else 
-                return ())
+        (when (charToBoolean swap) $ 
+            doSwap player))
    
 -- Function to perform first move   
    
@@ -111,26 +103,25 @@ nextMove = do
     thePile <- getGamePropertyST pile
     clearScreen
     showGame
-    if (playingFromFaceDown currentPlayer)
+    if playingFromFaceDown currentPlayer
         then moveFromFaceDown currentPlayer
-        else if (canMove currentPlayer thePile)
+        else if canMove currentPlayer thePile
                 then makeMove currentPlayer
                 else cantMove currentPlayer
     game <- getGameST
-    if (inPlay game)
-        then nextMove
-        else return ()
+    (when (inPlay game) $
+        nextMove)
 
 moveFromFaceDown player = do
     thePile <- getGamePropertyST pile
-    putStrLn $ (name player) ++ ", which card do you wish choose?"
+    putStrLn $ name player ++ ", which card do you wish choose?"
     cardToPlay <- fmap read getLine
     let card = getCard player (cardToPlay-1)
-    if (validMove card thePile)
+    if validMove card thePile
        then do
            putStrLn $ "Whew you chose the " ++ show card ++ ", press enter,"
            getLine
-           layCardsST player (card:[])
+           layCardsST player [card]
        else do
            putStrLn $ "OH DEAR! You chose the " ++ show card ++ ", press enter,"
            getLine
@@ -138,11 +129,11 @@ moveFromFaceDown player = do
            pickUpFromFaceDownST player card 
 
 makeMove player = do
-    putStrLn $ (name player) ++ ", which cards do you wish to lay?"
+    putStrLn $ name player ++ ", which cards do you wish to lay?"
     str <- getLine
     let cardsToPlay = getCards player (indexesFromString str)
     currentPile <- getGamePropertyST pile
-    if ((not $ validMove (head cardsToPlay) currentPile) || (not $ sameRank cardsToPlay))
+    if not (validMove (head cardsToPlay) currentPile) || not (sameRank cardsToPlay)
         then do 
             putStrLn $ "You cannot lay " ++ show cardsToPlay
             makeMove player
@@ -151,7 +142,7 @@ makeMove player = do
             dealToHandST player (length cardsToPlay)
 
 cantMove player = do
-    putStrLn $ "OH DEAR! " ++ (name player) ++ ", you cannot move."
+    putStrLn $ "OH DEAR! " ++ name player ++ ", you cannot move."
     putStrLn "Press enter to pick up the pile."
     getLine
     pickUpPileST player
