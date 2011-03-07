@@ -148,7 +148,7 @@ makeMove player = do
             makeMove player
         else do
             layCardsST player cardsToPlay
-            dealToHandST player 1
+            dealToHandST player (length cardsToPlay)
 
 cantMove player = do
     putStrLn $ "OH DEAR! " ++ (name player) ++ ", you cannot move."
