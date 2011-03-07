@@ -53,7 +53,7 @@ withGameST f = readIORef stateST >>= f
 
 -- Modify the game state
 modifyGameST :: (Game -> Game) -> IO ()
-modifyGameST  f = modifyIORef stateST f
+modifyGameST = modifyIORef stateST
 
 ------------------------------------------------
 
@@ -62,8 +62,7 @@ modifyGameST  f = modifyIORef stateST f
 --
 
 -- get the game state
-getGameST = do
-    readIORef stateST
+getGameST = readIORef stateST
    
 -- create the deck of correct size
 createDeckST ncards nplayers = do
@@ -91,13 +90,11 @@ layCardsST player cards = do
     ps <- getGamePropertyST players
     p <- getGamePropertyST pile
     let newPile = cards ++ p
-        nPlayerList = if (hasCardsInHand player) 
-                         then removeFromNamedPlayersHand player ps cards
-                         else if (hasCardsInFaceUp player)
-                                 then removeFromNamedPlayersFaceUp player ps cards
-                                 else removeFromNamedPlayersFaceDown player ps cards
+        nPlayerList | hasCardsInHand player = removeFromNamedPlayersHand player ps cards
+                    | hasCardsInFaceUp player = removeFromNamedPlayersFaceUp player ps cards
+                    | otherwise = removeFromNamedPlayersFaceDown player ps cards
         nPlayerList2 = makeCurrentPlayer player nPlayerList
-        move = (name player) ++ " laid the " ++ show cards
+        move = name player ++ " laid the " ++ show cards
 
     modifyGameST $ \st -> 
                     st { pile    = newPile 
@@ -112,8 +109,8 @@ burnST = do
     bcs <- getGamePropertyST burnt
     ps <- getGamePropertyST players
     let nPile = burn cs
-        nBurnt = if (null nPile) then cs ++ bcs else bcs
-        nPlayers = if (null nPile) then (last ps):(init ps) else ps
+        nBurnt = if null nPile then cs ++ bcs else bcs
+        nPlayers = if null nPile then last ps:init ps else ps
         
     modifyGameST $ \st -> st { pile    = nPile
                               ,burnt   = nBurnt
@@ -123,26 +120,23 @@ burnST = do
 missAGoST = do
     cs <- getGamePropertyST pile
     ps <- getGamePropertyST players
-    if (missAGo cs)
-       then do    
+    (when (missAGo cs) $ do
             let newPs = nextTurn ps
-            modifyGameST $ \st -> st { players = newPs }
-       else
-            return ()
+            modifyGameST $ \st -> st { players = newPs })
 
 -- make player pick up pile
 pickUpPileST player = do
     cs <- getGamePropertyST pile
     ps <- getGamePropertyST players
     let pickedUpPs = addToNamedPlayersHand player ps cs
-        move = (name player) ++ " picked up " ++ (show $ length cs) ++ " cards"
+        move = name player ++ " picked up " ++ show (length cs) ++ " cards"
     modifyGameST $ \st -> st { players = pickedUpPs, pile = [], lastMove = move }
 
 -- make player pick up chosen card from their face down hand
 pickUpFromFaceDownST player card = do
     ps <- getGamePropertyST players
-    let pickedUpPs = addToNamedPlayersHand player ps (card:[])
-        pickedUpPs2 = removeFromNamedPlayersFaceDown player pickedUpPs (card:[]) 
+    let pickedUpPs = addToNamedPlayersHand player ps [card]
+        pickedUpPs2 = removeFromNamedPlayersFaceDown player pickedUpPs [card] 
     modifyGameST $ \st -> st { players = pickedUpPs2 }
 
 -- move on to next player
@@ -157,27 +151,27 @@ dealToHandST player num = do
     cs <- getGamePropertyST deck
     ps <- getGamePropertyST players
     let dealtPs = addToNamedPlayersHand player ps (take num cs)
-    modifyGameST $ \st -> st { players = dealtPs, deck = (drop num cs) }
+    modifyGameST $ \st -> st { players = dealtPs, deck = drop num cs }
 
 -- deal a card from the deck to the players face up hand
 dealToFaceUpST p = do
     cs <- getGamePropertyST deck
     ps <- getGamePropertyST players
     let dealtPs = addToNamedPlayersFaceUp p ps (head cs)
-    modifyGameST $ \st -> st { players = dealtPs, deck = (tail cs) }
+    modifyGameST $ \st -> st { players = dealtPs, deck = tail cs }
 
 -- deal a card from the deck to the players face down hand
 dealToFaceDownST p = do
     cs <- getGamePropertyST deck
     ps <- getGamePropertyST players
     let dealtPs = addToNamedPlayersFaceDown p ps (head cs)
-    modifyGameST $ \st -> st { players = dealtPs, deck = (tail cs) }
+    modifyGameST $ \st -> st { players = dealtPs, deck = tail cs }
 
 -- deal the cards to the players
 dealST = do
     cardsEach  <- getGamePropertyST numCardsEach
     playerList <- getGamePropertyST players
-    forM playerList (\p -> do
+    forM playerList (\p -> 
         forM [1..cardsEach] (\_ -> do
             dealToFaceDownST p
             dealToFaceUpST p 
