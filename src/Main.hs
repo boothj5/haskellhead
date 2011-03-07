@@ -109,8 +109,7 @@ nextMove = do
                 then makeMove currentPlayer
                 else cantMove currentPlayer
     game <- getGameST
-    (when (inPlay game) $
-        nextMove)
+    (when (inPlay game) nextMove)
 
 moveFromFaceDown player = do
     thePile <- getGamePropertyST pile

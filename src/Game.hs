@@ -228,7 +228,7 @@ indexesFromString :: String -> [Integer]
 indexesFromString str = fmap (\x -> read x -1) (stringsFromString str)
 
 stringsFromString :: String -> [String]
-stringsFromString str = splitBy (== ',') str
+stringsFromString = splitBy (== ',')
 
 splitBy :: (a -> Bool) -> [a] -> [[a]]
 splitBy _ [] = []
