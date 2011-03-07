@@ -142,7 +142,7 @@ makeMove player = do
     str <- getLine
     let cardsToPlay = getCards player (indexesFromString str)
     currentPile <- getGamePropertyST pile
-    if (not $ validMove (head cardsToPlay) currentPile)
+    if ((not $ validMove (head cardsToPlay) currentPile) || (not $ sameRank cardsToPlay))
         then do 
             putStrLn $ "You cannot lay " ++ show cardsToPlay
             makeMove player

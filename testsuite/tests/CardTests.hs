@@ -113,7 +113,52 @@ testJackOnQueenNotValid =
     TestCase (assertBool
         "Test laying jack on queen is not valid"
         (not $ validMove jack [queen, ace]))
-   
+
+testSameRankFalseWhenEmptyList =
+    TestCase (assertEqual
+        "Test same rank returns false when empty list"
+        False (sameRank []))
+
+testSameRankTrueWhenOneCard =
+    TestCase (assertEqual
+        "Test same rank returns true when one card"
+        True (sameRank [Card Three Diamonds]))
+
+testSameRankTrueWhenTwoSame =
+    TestCase (assertEqual
+        "Test same rank returns true when two same"
+        True (sameRank [Card Three Diamonds, Card Three Spades]))
+
+testSameRankTrueWhenThreeSame =
+    TestCase (assertEqual
+        "Test same rank returns true when three same"
+        True (sameRank [Card Three Diamonds, Card Three Spades, Card Three Hearts]))
+
+testSameRankFalseWhenTwoDifferent =
+    TestCase (assertEqual
+        "Test same rank returns false when two different"
+        False (sameRank [Card Three Diamonds, Card Four Spades]))
+
+testSameRankFalseWhenThreeDifferent =
+    TestCase (assertEqual
+        "Test same rank returns false when three different"
+        False (sameRank [Card Three Diamonds, Card Four Spades, Card Jack Diamonds]))
+
+testSameRankFalseWhenThreeSameOneDifferent =
+    TestCase (assertEqual
+        "Test same rank returns false when three same, one different"
+        False (sameRank [Card Three Diamonds, Card Three Spades, Card Three Clubs, Card Four Diamonds]))
+
+testSameRankFalseWhenThreeSameOneDifferentOneMoreSame =
+    TestCase (assertEqual
+        "Test same rank returns false when three same, one different, and one more same"
+        False (sameRank [Card Three Diamonds
+                       , Card Three Spades
+                       , Card Three Clubs
+                       , Card Four Diamonds
+                       , Card Three Hearts]))
+
+
 -- Suite
 tests = TestList [TestLabel "BurnCardIsSpecial" testBurnCardIsSpecial
                 , TestLabel "InvisibleCardIsSpecial" testInvisibleCardIsSpecial
@@ -134,6 +179,13 @@ tests = TestList [TestLabel "BurnCardIsSpecial" testBurnCardIsSpecial
                 , TestLabel "TenOnKingValid" testTenOnKingValid
                 , TestLabel "FourOnFourValid" testFourOnFourValid
                 , TestLabel "JackOnQueenNotValid" testJackOnQueenNotValid
+                , TestLabel "SameRankFalseWhenEmptyList" testSameRankFalseWhenEmptyList
+                , TestLabel "SameRankTrueWhenOneCard" testSameRankTrueWhenOneCard
+                , TestLabel "SameRankTrueWhenTwoSame" testSameRankTrueWhenTwoSame
+                , TestLabel "SameRankTrueWhenThreeSame" testSameRankTrueWhenThreeSame
+                , TestLabel "SameRankFalseWhenTwoDifferent" testSameRankFalseWhenTwoDifferent
+                , TestLabel "SameRankFalseWhenThreeDifferent" testSameRankFalseWhenThreeDifferent
+                , TestLabel "SameRankFalseWhenThreeSameOneDifferent" testSameRankFalseWhenThreeSameOneDifferent
                 ]
 
 main = do

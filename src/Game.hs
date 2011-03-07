@@ -331,6 +331,11 @@ burn (c1:c2:c3:c4:cs) = if ((rank c1 == burnRank) || (ranksSame)) then [] else (
 missAGo :: Pile -> Bool
 missAGo [] = False
 missAGo (c:_) = rank c == missAGoRank
+
+sameRank :: [Card] -> Bool
+sameRank [] = False
+sameRank (_:[]) = True
+sameRank (c1:cs) = foldl (\same c -> if (rank c /= rank c1) then False else same) True cs
           
 getShithead :: PlayerCircle -> Maybe Player
 getShithead [] = Nothing
