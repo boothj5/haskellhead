@@ -1,6 +1,8 @@
 import Test.HUnit
 import Data.Maybe
 import Game
+import Player
+import Card
 
 -- test moveing through the players
 initial = [1,2,3,4]

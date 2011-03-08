@@ -1,6 +1,9 @@
 import Data.IORef
 import Control.Monad
 import Data.Maybe
+
+import Card
+import Player
 import Game
 import State
 
@@ -91,7 +94,7 @@ swapAll = do
 makeFirstMove = do
     playerList <- getGamePropertyST players
     let player = playerWithLowestCardFromList playerList
-        cards = getLowestCards player    
+        cards = lowestCards player    
     layCardsST player cards
     dealToHandST player (length cards)
     putStrLn $ show (name player) ++ " laid the " ++ show cards
@@ -117,7 +120,7 @@ makeMove player = do
     str <- getLine
     let cardsToPlay = getCards player (indexesFromString str)
     currentPile <- getGamePropertyST pile
-    if not (validMove (head cardsToPlay) currentPile) || not (sameRank cardsToPlay)
+    if not (validMove (head cardsToPlay) currentPile) || not (allRanksSame cardsToPlay)
         then do 
             putStrLn $ "You cannot lay " ++ show cardsToPlay
             makeMove player

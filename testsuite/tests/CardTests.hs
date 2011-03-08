@@ -1,4 +1,5 @@
 import Test.HUnit
+import Card
 import Game
 
 -- some short cuts for cards
@@ -117,42 +118,42 @@ testJackOnQueenNotValid =
 testSameRankFalseWhenEmptyList =
     TestCase (assertEqual
         "Test same rank returns false when empty list"
-        False (sameRank []))
+        False (allRanksSame []))
 
 testSameRankTrueWhenOneCard =
     TestCase (assertEqual
         "Test same rank returns true when one card"
-        True (sameRank [Card Three Diamonds]))
+        True (allRanksSame [Card Three Diamonds]))
 
 testSameRankTrueWhenTwoSame =
     TestCase (assertEqual
         "Test same rank returns true when two same"
-        True (sameRank [Card Three Diamonds, Card Three Spades]))
+        True (allRanksSame [Card Three Diamonds, Card Three Spades]))
 
 testSameRankTrueWhenThreeSame =
     TestCase (assertEqual
         "Test same rank returns true when three same"
-        True (sameRank [Card Three Diamonds, Card Three Spades, Card Three Hearts]))
+        True (allRanksSame [Card Three Diamonds, Card Three Spades, Card Three Hearts]))
 
 testSameRankFalseWhenTwoDifferent =
     TestCase (assertEqual
         "Test same rank returns false when two different"
-        False (sameRank [Card Three Diamonds, Card Four Spades]))
+        False (allRanksSame [Card Three Diamonds, Card Four Spades]))
 
 testSameRankFalseWhenThreeDifferent =
     TestCase (assertEqual
         "Test same rank returns false when three different"
-        False (sameRank [Card Three Diamonds, Card Four Spades, Card Jack Diamonds]))
+        False (allRanksSame [Card Three Diamonds, Card Four Spades, Card Jack Diamonds]))
 
 testSameRankFalseWhenThreeSameOneDifferent =
     TestCase (assertEqual
         "Test same rank returns false when three same, one different"
-        False (sameRank [Card Three Diamonds, Card Three Spades, Card Three Clubs, Card Four Diamonds]))
+        False (allRanksSame [Card Three Diamonds, Card Three Spades, Card Three Clubs, Card Four Diamonds]))
 
 testSameRankFalseWhenThreeSameOneDifferentOneMoreSame =
     TestCase (assertEqual
         "Test same rank returns false when three same, one different, and one more same"
-        False (sameRank [Card Three Diamonds
+        False (allRanksSame [Card Three Diamonds
                        , Card Three Spades
                        , Card Three Clubs
                        , Card Four Diamonds

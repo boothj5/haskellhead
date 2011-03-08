@@ -21,6 +21,7 @@ import Control.Monad
 import System.Random
 import System.Random.Shuffle
 import Game
+import Player
    
 ------------------------------------------------
 

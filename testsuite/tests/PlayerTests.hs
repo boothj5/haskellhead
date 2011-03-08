@@ -1,5 +1,7 @@
 import Test.HUnit
 import Game
+import Player
+import Card
 
 -- test player equality
 player1 = ( Player { name = "James", hand = [], faceUp = [], faceDown = []} )
@@ -82,6 +84,27 @@ testPlayingFromFaceDownWhenOnlyFaceDown =
         "Test playing from face down when only cards in facedown"
         (playingFromFaceDown playerWithFaceDownCardsOnly))
 
+playerToSwap = Player { name = "Monkey"
+                      , hand = [Card Ace Spades, Card Three Diamonds, Card Ten Spades]
+                      , faceUp = [Card Six Spades, Card Two Hearts, Card Four Diamonds]
+                      , faceDown = [Card Seven Clubs, Card Nine Diamonds, Card King Clubs]
+                      } 
+
+testSwapCardsHandCorrect =
+    TestCase (assertBool
+        "Test swapping cards result in correct hand"
+        ((Card Two Hearts) `elem` returned 
+            && (Card Three) Diamonds `elem` returned
+            && (Card Ten Spades) `elem` returned))
+    where returned = hand (swapHandWithFaceUp playerToSwap 0 1)
+   
+testSwapCardsFaceUpCorrect =
+    TestCase (assertEqual
+        "Test swapping cards result in correct faceUp"
+        [Card Six Spades, Card Ace Spades, Card Four Diamonds]
+        returned)
+    where returned = faceUp (swapHandWithFaceUp playerToSwap 0 1)
+   
    
 -- Suite
 tests = TestList [TestLabel "PlayersEqualDiffCards" testPlayersEqualDiffCards
@@ -95,6 +118,8 @@ tests = TestList [TestLabel "PlayersEqualDiffCards" testPlayersEqualDiffCards
                 , TestLabel "NotPlayingFromFaceDownOnlyCardsInHand" testNotPlayingFromFaceDownOnlyCardsInHand
                 , TestLabel "NotPlayingFromFaceDownCardsInHandAndFaceUp" testNotPlayingFromFaceDownCardsInHandAndFaceUp
                 , TestLabel "PlayingFromFaceDownWhenOnlyFaceDown" testPlayingFromFaceDownWhenOnlyFaceDown
+                , TestLabel "SwapCardsHandCorrect" testSwapCardsHandCorrect
+                , TestLabel "SwapCardsFaceUpCorrect" testSwapCardsFaceUpCorrect
                 ]
 
 main = do
