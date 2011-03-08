@@ -111,21 +111,6 @@ nextMove = do
     game <- getGameST
     (when (inPlay game) nextMove)
 
-moveFromFaceDown player = do
-    thePile <- getGamePropertyST pile
-    putStrLn $ name player ++ ", which card do you wish choose?"
-    cardToPlay <- fmap read getLine
-    let card = getCard player (cardToPlay-1)
-    if validMove card thePile
-       then do
-           putStrLn $ "Whew you chose the " ++ show card ++ ", press enter,"
-           getLine
-           layCardsST player [card]
-       else do
-           putStrLn $ "OH DEAR! You chose the " ++ show card ++ ", press enter,"
-           getLine
-           pickUpPileST player
-           pickUpFromFaceDownST player card 
 
 makeMove player = do
     putStrLn $ name player ++ ", which cards do you wish to lay?"
@@ -145,3 +130,20 @@ cantMove player = do
     putStrLn "Press enter to pick up the pile."
     getLine
     pickUpPileST player
+    
+
+moveFromFaceDown player = do
+    thePile <- getGamePropertyST pile
+    putStrLn $ name player ++ ", which card do you wish choose?"
+    cardToPlay <- fmap read getLine
+    let card = getCard player (cardToPlay-1)
+    if validMove card thePile
+       then do
+           putStrLn $ "Whew you chose the " ++ show card ++ ", press enter,"
+           getLine
+           layCardsST player [card]
+       else do
+           putStrLn $ "OH DEAR! You chose the " ++ show card ++ ", press enter,"
+           getLine
+           pickUpPileST player
+           pickUpFromFaceDownST player card     

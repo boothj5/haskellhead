@@ -148,8 +148,16 @@ moveToNextPlayerST = do
 dealToHandST player num = do
     cs <- getGamePropertyST deck
     ps <- getGamePropertyST players
-    let dealtPs = addToNamedPlayersHand player ps (take num cs)
-    modifyGameST $ \st -> st { players = dealtPs, deck = drop num cs }
+    n <- getGamePropertyST numCardsEach
+    
+    let sizeOfHand = length (hand (   fromJust (getPlayer (name player) ps)    )    )
+        numToDeal | sizeOfHand >= n = 0
+                  | otherwise = n - sizeOfHand
+    if numToDeal == 0
+       then return ()
+       else do
+            let dealtPs = addToNamedPlayersHand player ps (take numToDeal cs)
+            modifyGameST $ \st -> st { players = dealtPs, deck = drop numToDeal cs }
 
 -- deal a card from the deck to the players face up hand
 dealToFaceUpST p = do
