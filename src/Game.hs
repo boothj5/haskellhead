@@ -174,9 +174,16 @@ getPlayer :: String -> PlayerCircle -> Maybe Player
 getPlayer nameStr [] = Nothing
 getPlayer nameStr ps = find (\p -> name p == nameStr) ps
 
+compareCardsSpecialHighest :: Card -> Card -> Ordering
+compareCardsSpecialHighest c1 c2 
+    | layOnAnythingCard c1 && layOnAnythingCard c2 = EQ
+    | layOnAnythingCard c1 && not (layOnAnythingCard c2) = GT
+    | not (layOnAnythingCard c1) && layOnAnythingCard c2 = LT
+    | otherwise = compare c1 c2
+    
 addToPlayersHand :: Player -> [Card] -> Player
 addToPlayersHand p cs = Player { name        = name p
-                                ,hand        = sort $ cs ++ hand p
+                                ,hand        = sortBy compareCardsSpecialHighest (cs ++ hand p)
                                 ,faceUp      = faceUp p
                                 ,faceDown    = faceDown p }
 
