@@ -90,9 +90,7 @@ layCardsST player cards = do
     ps <- getGamePropertyST players
     p <- getGamePropertyST pile
     let newPile = cards ++ p
-        nPlayerList | hasCardsInHand player = removeFromNamedPlayersHand player ps cards
-                    | hasCardsInFaceUp player = removeFromNamedPlayersFaceUp player ps cards
-                    | otherwise = removeFromNamedPlayersFaceDown player ps cards
+        nPlayerList = takeCardsFromPlayer player ps cards
         nPlayerList2 = makeCurrentPlayer player nPlayerList
         move = name player ++ " laid the " ++ show cards
 

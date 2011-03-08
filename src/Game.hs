@@ -336,3 +336,9 @@ sameRank (c1:cs) = foldl (\same c -> if rank c /= rank c1 then False else same) 
 getShithead :: PlayerCircle -> Maybe Player
 getShithead [] = Nothing
 getShithead (p:ps) = if hasCards p then Just p else getShithead ps
+                        
+takeCardsFromPlayer :: Player -> [Player] -> [Card] -> [Player]
+takeCardsFromPlayer p ps cs | hasCardsInHand p = removeFromNamedPlayersHand p ps cs
+                            | hasCardsInFaceUp p = removeFromNamedPlayersFaceUp p ps cs
+                            | otherwise = removeFromNamedPlayersFaceDown p ps cs                        
+                        
