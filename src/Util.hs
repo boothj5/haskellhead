@@ -17,5 +17,5 @@ stringsFromString = splitBy (== ',')
 
 splitBy :: (a -> Bool) -> [a] -> [[a]]
 splitBy _ [] = []
-splitBy f list = first : splitBy f (dropWhile f rest) where
-  (first, rest) = break f list  
+splitBy f list = first : splitBy f (dropWhile f rest) 
+    where (first, rest) = break f list  

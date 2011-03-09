@@ -32,12 +32,12 @@ import Player
 -- Initial state
 emptyST :: Game
 emptyST = Game { numPlayers      = 0
-                       ,players         = []
-                       ,numCardsEach    = 0
-                       ,deck            = [] 
-                       ,pile            = []
-                       ,burnt           = []
-                       ,lastMove        = "" }
+               , players         = []
+               , numCardsEach    = 0
+               , deck            = [] 
+               , pile            = []
+               , burnt           = []
+               , lastMove        = "" }
 
 -- Global state variable
 stateST :: IORef Game

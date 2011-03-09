@@ -44,13 +44,14 @@ type Deck = [Card]
 type PlayerCircle = [Player]
 
 data Game = Game { numPlayers      :: Int
-                                ,players         :: PlayerCircle
-                                ,numCardsEach    :: Int
-                                ,deck            :: Deck
-                                ,pile            :: Pile
-                                ,burnt           :: [Card]
-                                ,lastMove        :: String
-                               } 
+                 , players         :: PlayerCircle
+                 , numCardsEach    :: Int
+                 , deck            :: Deck
+                 , pile            :: Pile
+                 , burnt           :: [Card]
+                 , lastMove        :: String
+                 } 
+                 
 instance Show Game where
     show game = if null (lastMove game) 
                    then playersString 
@@ -128,21 +129,21 @@ getPlayer nameStr ps = find (\p -> name p == nameStr) ps
 addToPlayersHand :: Player -> PlayerCircle -> [Card] -> PlayerCircle
 addToPlayersHand _ []     _   = []
 addToPlayersHand p1 (p2:ps) cs | p1 == p2    = addToHand p2 cs : ps
-                                   | otherwise   = p2 : addToPlayersHand p1 ps cs
+                               | otherwise   = p2 : addToPlayersHand p1 ps cs
 
 addToPlayersFaceUp :: Player -> PlayerCircle -> Card -> PlayerCircle
 addToPlayersFaceUp _ []     _   = []
 addToPlayersFaceUp p1 (p2:ps) c | p1 == p2    = addToFaceUp p2 c : ps
-                                     | otherwise   = p2 : addToPlayersFaceUp p1 ps c
+                                | otherwise   = p2 : addToPlayersFaceUp p1 ps c
 
 addToPlayersFaceDown :: Player -> PlayerCircle -> Card -> PlayerCircle
 addToPlayersFaceDown _ []     _   = []
 addToPlayersFaceDown p1 (p2:ps) c | p1 == p2    = addToFaceDown p2 c : ps
-                                       | otherwise   = p2 : addToPlayersFaceDown p1 ps c
+                                  | otherwise   = p2 : addToPlayersFaceDown p1 ps c
 
 swapForPlayer :: Player -> PlayerCircle -> Int -> Int -> PlayerCircle
 swapForPlayer p1 (p2:ps) h f | p1 == p2  = swapHandWithFaceUp p2 h f : ps
-                                  | otherwise = p2 : swapForPlayer p1 ps h f
+                             | otherwise = p2 : swapForPlayer p1 ps h f
 
 playerWithLowestCardFromCircle :: PlayerCircle -> Player
 playerWithLowestCardFromCircle [] = error "No players"
@@ -153,20 +154,19 @@ removeFromPlayersHand :: Player -> PlayerCircle -> [Card] -> PlayerCircle
 removeFromPlayersHand _ [] _        = []
 removeFromPlayersHand _ ps []       = ps
 removeFromPlayersHand p1 (p2:ps) cs | p1 == p2  = removeFromHand p2 cs : ps
-                                         | otherwise = p2 : removeFromPlayersHand p1 ps cs
-                                         
+                                    | otherwise = p2 : removeFromPlayersHand p1 ps cs
 
 removeFromPlayersFaceUp :: Player -> PlayerCircle -> [Card] -> PlayerCircle
 removeFromPlayersFaceUp _ [] _        = []
 removeFromPlayersFaceUp _ ps []       = ps
 removeFromPlayersFaceUp p1 (p2:ps) cs | p1 == p2  = removeFromFaceUp p2 cs : ps
-                                           | otherwise = p2 : removeFromPlayersFaceUp p1 ps cs
+                                      | otherwise = p2 : removeFromPlayersFaceUp p1 ps cs
 
 removeFromPlayersFaceDown :: Player -> PlayerCircle -> [Card] -> PlayerCircle
 removeFromPlayersFaceDown _ [] _        = []
 removeFromPlayersFaceDown _ ps []       = ps
 removeFromPlayersFaceDown p1 (p2:ps) cs | p1 == p2  = removeFromFaceDown p2 cs : ps
-                                             | otherwise = p2 : removeFromPlayersFaceDown p1 ps cs
+                                        | otherwise = p2 : removeFromPlayersFaceDown p1 ps cs
 
 nextTurn :: [a] -> [a]
 nextTurn [] = []
