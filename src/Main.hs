@@ -1,11 +1,13 @@
 import Data.IORef
 import Control.Monad
 import Data.Maybe
+import Data.Char
 
 import Card
 import Player
 import Game
 import State
+import Util
 
 main = do
     clearScreen
@@ -93,7 +95,7 @@ swapAll = do
    
 makeFirstMove = do
     playerList <- getGamePropertyST players
-    let player = playerWithLowestCardFromList playerList
+    let player = playerWithLowestCardFromCircle playerList
         cards = lowestCards player    
     layCardsST player cards
     dealToHandST player (length cards)

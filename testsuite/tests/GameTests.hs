@@ -3,6 +3,7 @@ import Data.Maybe
 import Game
 import Player
 import Card
+import Util
 
 -- test moveing through the players
 initial = [1,2,3,4]
@@ -68,12 +69,12 @@ testNotInPlayWhenOnePlayerHasCards =
 testOneDeckRequired = 
     TestCase (assertEqual
         "Test correct number of decks when only one needed"
-        1 (numDecksRequired 3 2))
+        52 (length (newDeckWithEnoughCards 3 2)))
 
 testTwoDeckRequired = 
     TestCase (assertEqual
         "Test correct number of decks when two needed"
-        2 (numDecksRequired 3 6))
+        104 (length (newDeckWithEnoughCards 3 6)))
 
 testBurnEmptyReturnsEmpty =
     TestCase (assertEqual
@@ -133,25 +134,25 @@ playerList1 = [playerWithCards1, playerWithCards2, playerWithCards3]
 testNextPlayerWithCardsNextHasCards =
     TestCase (assertEqual
         "Test next player with cards is chosen when next player has cards"
-        "Dude" (name $ fromJust ( getCurrentPlayer $ moveToNextPlayerWithCards playerList1 )))
+        "Dude" (name $ head $ moveToNextPlayerWithCards playerList1 ))
 
 playerList2 = [playerWithCards1, playerWithNoCards, playerWithCards2, playerWithCards3]
 testNextPlayerWithCardsNextButOneHasCards =
     TestCase (assertEqual
         "Test next player with cards is chosen when next player but one has cards"
-        "Dude" (name $ fromJust ( getCurrentPlayer $ moveToNextPlayerWithCards playerList2 )))
+        "Dude" (name $ head $ moveToNextPlayerWithCards playerList2 ))
 
 playerList3 = [playerWithCards1, playerWithNoCards, playerWithNoCards, playerWithCards3]
 testNextPlayerWithCardsNextButTwoHasCards =
     TestCase (assertEqual
         "Test next player with cards is chosen when next player but two has cards"
-        "Bob" (name $ fromJust ( getCurrentPlayer $ moveToNextPlayerWithCards playerList3 )))
+        "Bob" (name $ head $ moveToNextPlayerWithCards playerList3 ))
 
 playerList4 = [playerWithNoCards, playerWithNoCards, playerWithNoCards, playerWithCards3]
 testNextPlayerWithCardsOnlyLastHasCards =
     TestCase (assertEqual
         "Test next player with cards is chosen when only last player has cards"
-        "Bob" (name $ fromJust ( getCurrentPlayer $ moveToNextPlayerWithCards playerList4 )))
+        "Bob" (name $ head $ moveToNextPlayerWithCards playerList4 ))
 
 testIntsFromStringOneInt =
     TestCase (assertEqual

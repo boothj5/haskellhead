@@ -68,7 +68,7 @@ getGameST = readIORef stateST
 -- create the deck of correct size
 createDeckST ncards nplayers = do
     gen <- getStdGen
-    let newDeck = newDeckWithEnoughCards $ numDecksRequired ncards nplayers
+    let newDeck = newDeckWithEnoughCards ncards nplayers
         shuffledDeck = shuffle' newDeck (length newDeck) gen
     modifyGameST $ \st ->
                     st { numPlayers     = nplayers
@@ -83,7 +83,7 @@ createPlayersST names = do
 -- swap cards between players face up hand and face down hand
 swapCardsST player cardFromHand cardFromFaceUp = do
     playerList <- getGamePropertyST players
-    let swappedPlayers = swapForNamedPlayer player playerList cardFromHand cardFromFaceUp
+    let swappedPlayers = swapForPlayer player playerList cardFromHand cardFromFaceUp
     modifyGameST $ \st -> st { players = swappedPlayers }
 
 -- Lay the cards from the players hand
@@ -91,7 +91,7 @@ layCardsST player cards = do
     ps <- getGamePropertyST players
     p <- getGamePropertyST pile
     let newPile = cards ++ p
-        nPlayerList = takeCardsFromPlayer player ps cards
+        nPlayerList = removeCardsFromPlayer player ps cards
         nPlayerList2 = makeCurrentPlayer player nPlayerList
         move = name player ++ " laid the " ++ show cards
 
@@ -127,15 +127,15 @@ missAGoST = do
 pickUpPileST player = do
     cs <- getGamePropertyST pile
     ps <- getGamePropertyST players
-    let pickedUpPs = addToNamedPlayersHand player ps cs
+    let pickedUpPs = addToPlayersHand player ps cs
         move = name player ++ " picked up " ++ show (length cs) ++ " cards"
     modifyGameST $ \st -> st { players = pickedUpPs, pile = [], lastMove = move }
 
 -- make player pick up chosen card from their face down hand
 pickUpFromFaceDownST player card = do
     ps <- getGamePropertyST players
-    let pickedUpPs = addToNamedPlayersHand player ps [card]
-        pickedUpPs2 = removeFromNamedPlayersFaceDown player pickedUpPs [card] 
+    let pickedUpPs = addToPlayersHand player ps [card]
+        pickedUpPs2 = removeFromPlayersFaceDown player pickedUpPs [card] 
     modifyGameST $ \st -> st { players = pickedUpPs2 }
 
 -- move on to next player
@@ -157,21 +157,21 @@ dealToHandST player num = do
     if numToDeal == 0
        then return ()
        else do
-            let dealtPs = addToNamedPlayersHand player ps (take numToDeal cs)
+            let dealtPs = addToPlayersHand player ps (take numToDeal cs)
             modifyGameST $ \st -> st { players = dealtPs, deck = drop numToDeal cs }
 
 -- deal a card from the deck to the players face up hand
 dealToFaceUpST p = do
     cs <- getGamePropertyST deck
     ps <- getGamePropertyST players
-    let dealtPs = addToNamedPlayersFaceUp p ps (head cs)
+    let dealtPs = addToPlayersFaceUp p ps (head cs)
     modifyGameST $ \st -> st { players = dealtPs, deck = tail cs }
 
 -- deal a card from the deck to the players face down hand
 dealToFaceDownST p = do
     cs <- getGamePropertyST deck
     ps <- getGamePropertyST players
-    let dealtPs = addToNamedPlayersFaceDown p ps (head cs)
+    let dealtPs = addToPlayersFaceDown p ps (head cs)
     modifyGameST $ \st -> st { players = dealtPs, deck = tail cs }
 
 -- deal the cards to the players
