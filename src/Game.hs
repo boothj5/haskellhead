@@ -149,7 +149,7 @@ removeFromNamedPlayersFaceDown :: Player -> PlayerCircle -> [Card] -> PlayerCirc
 removeFromNamedPlayersFaceDown _ [] _        = []
 removeFromNamedPlayersFaceDown _ ps []       = ps
 removeFromNamedPlayersFaceDown p1 (p2:ps) cs | p1 == p2  = removeFromFaceDown p2 cs : ps
-                                         | otherwise = p2 : removeFromNamedPlayersFaceDown p1 ps cs
+                                             | otherwise = p2 : removeFromNamedPlayersFaceDown p1 ps cs
 
 nextTurn :: [a] -> [a]
 nextTurn [] = []

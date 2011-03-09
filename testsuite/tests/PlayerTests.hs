@@ -104,8 +104,58 @@ testSwapCardsFaceUpCorrect =
         [Card Six Spades, Card Ace Spades, Card Four Diamonds]
         returned)
     where returned = faceUp (swapHandWithFaceUp playerToSwap 0 1)
-   
-   
+
+beforeRemove = [ Card Ace Spades
+               , Card Three Diamonds
+               , Card Ten Spades
+               , Card Seven Clubs
+               , Card Ten Diamonds
+               , Card King Clubs ]
+
+toRemove = [ Card Three Diamonds
+           , Card Ten Spades
+           , Card Ten Diamonds ]
+
+playerWithFaceDownForRemove = 
+    Player { name = "Monkey"
+           , hand = []
+           , faceUp = []
+           , faceDown = beforeRemove
+           } 
+
+playerWithFaceUpForRemove = 
+    Player { name = "Monkey"
+           , hand = []
+           , faceUp = beforeRemove
+           , faceDown = []
+           } 
+
+playerWithHandForRemove = 
+    Player { name = "Monkey"
+           , hand = beforeRemove
+           , faceUp = []
+           , faceDown = []
+           } 
+
+testRemoveFromFaceDown = 
+    TestCase (assertEqual
+        "Test removing from face down"
+        [ Card Ace Spades, Card Seven Clubs, Card King Clubs]
+        (faceDown (removeFromFaceDown playerWithFaceDownForRemove toRemove)))
+
+testRemoveFromFaceUp = 
+    TestCase (assertEqual
+        "Test removing from face up"
+        [ Card Ace Spades, Card Seven Clubs, Card King Clubs]
+        (faceUp (removeFromFaceUp playerWithFaceUpForRemove toRemove)))
+
+testRemoveFromHand = 
+    TestCase (assertEqual
+        "Test removing from hand"
+        [ Card Ace Spades, Card Seven Clubs, Card King Clubs]
+        (hand (removeFromHand playerWithHandForRemove toRemove)))
+
+
 -- Suite
 tests = TestList [TestLabel "PlayersEqualDiffCards" testPlayersEqualDiffCards
                 , TestLabel "PlayersNotEqualDiffCase" testPlayersNotEqualDiffCase
@@ -120,6 +170,9 @@ tests = TestList [TestLabel "PlayersEqualDiffCards" testPlayersEqualDiffCards
                 , TestLabel "PlayingFromFaceDownWhenOnlyFaceDown" testPlayingFromFaceDownWhenOnlyFaceDown
                 , TestLabel "SwapCardsHandCorrect" testSwapCardsHandCorrect
                 , TestLabel "SwapCardsFaceUpCorrect" testSwapCardsFaceUpCorrect
+                , TestLabel "RemoveFromFaceDown" testRemoveFromFaceDown
+                , TestLabel "RemoveFromFaceUp" testRemoveFromFaceUp
+                , TestLabel "RemoveFromHand" testRemoveFromHand
                 ]
 
 main = do

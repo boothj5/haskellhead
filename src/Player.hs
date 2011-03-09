@@ -128,10 +128,13 @@ lowestCards p = lowest : filter (ranksAreEqual lowest) handMinusLowest
           lowest = lowestCard p
           handMinusLowest = filter (\c -> lowest /= c) playersHand
 
+removeCards :: [Card] -> Hand -> Hand
+removeCards cs h = filter (`notElem` cs) h
+
 removeFromHand :: Player -> [Card] -> Player
 removeFromHand p [] = p
 removeFromHand p cs = Player { name = name p
-                                     ,hand = filter (`notElem` cs) $ hand p
+                                     ,hand = removeCards cs (hand p)
                                      ,faceUp = faceUp p
                                      ,faceDown = faceDown p }
 
@@ -139,7 +142,7 @@ removeFromFaceUp :: Player -> [Card] -> Player
 removeFromFaceUp p [] = p
 removeFromFaceUp p cs = Player { name = name p
                                        ,hand = hand p
-                                       ,faceUp = filter (`notElem` cs) $ faceUp p
+                                       ,faceUp = removeCards cs (faceUp p)
                                        ,faceDown = faceDown p }
 
 removeFromFaceDown :: Player -> [Card] -> Player
@@ -147,5 +150,5 @@ removeFromFaceDown p [] = p
 removeFromFaceDown p cs = Player { name = name p
                                          ,hand = hand p
                                          ,faceUp = faceUp p
-                                         ,faceDown = filter (`notElem` cs) $ faceDown p }
+                                         ,faceDown = removeCards cs (faceDown p)  }
                        
