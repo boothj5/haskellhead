@@ -15,4 +15,4 @@ runAllTests a b pd lb = do
 
 runHlint a b pd lb = do
     system ("hlint ./src/*.hs --report=./dist/doc/html/haskellhead/haskellhead-hlint.html") >> return ()
-    system ("hlint ./testsuite/tests/*.hs --report=./dist/doc/html/haskellhead/tests-hlint.html") >> return ()
+    system ("hlint ./testsuite/tests/*.hs --report=./dist/doc/html/haskellhead/tests-hlint.html") >> return ()  
