@@ -1,0 +1,17 @@
+ColourPrefs
+  { keyword  = [Foreground Green]
+  , keyglyph = [Foreground Red]
+  , layout   = [Foreground Red]
+  , comment  = [Italic,Foreground Blue]
+  , conid    = [Normal]
+  , varid    = [Normal]
+  , conop    = [Bold,Foreground Red]
+  , varop    = [Foreground Red]
+  , string   = [Foreground Magenta]
+  , char     = [Foreground Magenta]
+  , number   = [Foreground Magenta]
+  , cpp      = [Dim,Foreground Magenta]
+  , selection = [Bold, Foreground Magenta]
+  , variantselection = [Dim, Foreground Red, Underscore]
+  , definition = [Normal]
+  }

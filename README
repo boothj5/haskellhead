@@ -1,21 +1,21 @@
-To build:
+To run
 
-    cabal configure
-    cabal build
+    Setup.hs clean
+    Setup.hs configure --user
+    Setup.hs build
 
-To run:
+   ./dist/build/haskellhead/haskellhead
 
-    ./dist/build/haskellhead/haskellhead
+To run tests
 
-I to just install straight to your ~/bin directory
+    Setup.hs configure --user
+    Setup.hs test
 
-    cabal install --prefix=$HOME --user
+To generate documentation at ./dist/doc/html/haskellhead/haskellhead/index.html
 
-And provided your bin directory is on your PATH, to run
+    Setup.hs configure --user
+    Setup.hs haddock --executables
 
-    haskellhead
+Example HTML soure code output
 
-Running tests
-
-    cd testsuite
-    ./runtests.sh
+    HsColour ../src/Game.hs -html > Game.html
