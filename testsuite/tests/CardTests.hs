@@ -189,5 +189,4 @@ tests = TestList [TestLabel "BurnCardIsSpecial" testBurnCardIsSpecial
                 , TestLabel "SameRankFalseWhenThreeSameOneDifferent" testSameRankFalseWhenThreeSameOneDifferent
                 ]
 
-main = do
-    runTestTT tests
+main = runTestTT tests

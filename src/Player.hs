@@ -129,7 +129,7 @@ lowestCards p = lowest : filter (ranksAreEqual lowest) handMinusLowest
           handMinusLowest = filter (\c -> lowest /= c) playersHand
 
 removeCards :: [Card] -> Hand -> Hand
-removeCards cs h = filter (`notElem` cs) h
+removeCards cs = filter (`notElem` cs) 
 
 removeFromHand :: Player -> [Card] -> Player
 removeFromHand p [] = p

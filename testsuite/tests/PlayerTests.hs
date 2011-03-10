@@ -4,10 +4,10 @@ import Player
 import Card
 
 -- test player equality
-player1 = ( Player { name = "James", hand = [], faceUp = [], faceDown = []} )
-player2 = ( Player { name = "James", hand = [(Card Three Spades)], faceUp = [], faceDown = []} )
-player3 = ( Player { name = "Monkey", hand = [(Card Three Spades)], faceUp = [], faceDown = []} )
-player4 = ( Player { name = "james", hand = [], faceUp = [], faceDown = []} )
+player1 = Player { name = "James", hand = [], faceUp = [], faceDown = []}
+player2 = Player { name = "James", hand = [Card Three Spades], faceUp = [], faceDown = []}
+player3 = Player { name = "Monkey", hand = [Card Three Spades], faceUp = [], faceDown = []}
+player4 = Player { name = "james", hand = [], faceUp = [], faceDown = []}
 testPlayersEqualDiffCards = 
     TestCase (assertEqual
         "Players equal with different cards"
@@ -29,19 +29,19 @@ cardC = Card Ten Hearts
 cardD = Card Two Spades
 
 playerWithNoCards = 
-        ( Player { name = "Mark", hand = [], faceUp = [], faceDown = []} )
+    Player { name = "Mark", hand = [], faceUp = [], faceDown = []}
 playerWithNoCards2 = 
-        ( Player { name = "Stevie", hand = [], faceUp = [], faceDown = []} )
+    Player { name = "Stevie", hand = [], faceUp = [], faceDown = []}
 playerWithFaceDownCardsOnly = 
-        ( Player { name = "James", hand = [], faceUp = [], faceDown = [cardA]} )
+    Player { name = "James", hand = [], faceUp = [], faceDown = [cardA]}
 payerWithFaceUpAndFaceDownCards = 
-        ( Player { name = "Davo", hand = [], faceUp = [cardB], faceDown = [cardA]} )
+    Player { name = "Davo", hand = [], faceUp = [cardB], faceDown = [cardA]}
 payerWithCardsInAllHands = 
-        ( Player { name = "Monkey", hand = [cardC], faceUp = [cardB], faceDown = [cardA]} )
+    Player { name = "Monkey", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
 playerWithOnlyHand =
-        ( Player { name = "Sloth", hand = [cardC], faceUp = [], faceDown = []} )
+    Player { name = "Sloth", hand = [cardC], faceUp = [], faceDown = []}
 playerWithHandAndFaceUp =
-        ( Player { name = "Sloth", hand = [cardC], faceUp = [cardB], faceDown = []} )
+    Player { name = "Sloth", hand = [cardC], faceUp = [cardB], faceDown = []}
     
 
 testPlayerHasCardsWhenFaceDownOnly = 
@@ -62,22 +62,22 @@ testPlayerHasCardsWhenAllHands =
 testNotPlayingFromFaceDownWhenAllHandsHaveCards = 
     TestCase (assertBool
         "Test not playing from face down when all hands have cards"
-        ((playingFromFaceDown payerWithCardsInAllHands) == False))
+        (not (playingFromFaceDown payerWithCardsInAllHands)))
 
 testNotPlayingFromFaceDownWhenOnlyEmptyHand = 
     TestCase (assertBool
         "Test not playing from face down when only empty hand"
-        ((playingFromFaceDown payerWithFaceUpAndFaceDownCards) == False))
+        (not (playingFromFaceDown payerWithFaceUpAndFaceDownCards)))
 
 testNotPlayingFromFaceDownOnlyCardsInHand = 
     TestCase (assertBool
         "Test not playing from face down when only cards in hand"
-        ((playingFromFaceDown playerWithOnlyHand) == False))
+        (not (playingFromFaceDown playerWithOnlyHand)))
 
 testNotPlayingFromFaceDownCardsInHandAndFaceUp = 
     TestCase (assertBool
         "Test not playing from face down when cards in hand and faceup"
-        ((playingFromFaceDown playerWithHandAndFaceUp) == False))
+        (not (playingFromFaceDown playerWithHandAndFaceUp)))
 
 testPlayingFromFaceDownWhenOnlyFaceDown = 
     TestCase (assertBool
@@ -93,9 +93,9 @@ playerToSwap = Player { name = "Monkey"
 testSwapCardsHandCorrect =
     TestCase (assertBool
         "Test swapping cards result in correct hand"
-        ((Card Two Hearts) `elem` returned 
-            && (Card Three) Diamonds `elem` returned
-            && (Card Ten Spades) `elem` returned))
+        (Card Two Hearts `elem` returned 
+            && Card Three Diamonds `elem` returned
+            && Card Ten Spades `elem` returned))
     where returned = hand (swapHandWithFaceUp playerToSwap 0 1)
    
 testSwapCardsFaceUpCorrect =
@@ -175,5 +175,4 @@ tests = TestList [TestLabel "PlayersEqualDiffCards" testPlayersEqualDiffCards
                 , TestLabel "RemoveFromHand" testRemoveFromHand
                 ]
 
-main = do
-    runTestTT tests
+main = runTestTT tests

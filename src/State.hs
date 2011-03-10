@@ -154,11 +154,9 @@ dealToHandST player num = do
     let sizeOfHand = length (hand (   fromJust (getPlayer (name player) ps)    )    )
         numToDeal | sizeOfHand >= n = 0
                   | otherwise = n - sizeOfHand
-    if numToDeal == 0
-       then return ()
-       else do
-            let dealtPs = addToPlayersHand player ps (take numToDeal cs)
-            modifyGameST $ \st -> st { players = dealtPs, deck = drop numToDeal cs }
+    (unless (numToDeal == 0) $
+       do let dealtPs = addToPlayersHand player ps (take numToDeal cs)
+          modifyGameST $ \st -> st { players = dealtPs, deck = drop numToDeal cs })
 
 -- deal a card from the deck to the players face up hand
 dealToFaceUpST p = do
