@@ -1,12 +1,11 @@
 -- | Module for represneting cards and the functions that may be performed on them
 module Card 
-( Card(Card)
+( Card(Card, rank)
 , Rank(Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace)
 , Suit(Hearts, Clubs, Diamonds, Spades)
 , compareCardsSpecialHighest
 , layOnAnythingCard
 , ranksAreEqual
-, rank
 , burnRank
 , missAGoRank
 , invisibleRank
@@ -15,11 +14,7 @@ module Card
 ) where 
 
 import Data.Char
-------------------------------------------------
 
---
--- Data types
---
 data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace 
     deriving (Show, Eq, Ord, Enum)
 

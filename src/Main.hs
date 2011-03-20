@@ -1,3 +1,6 @@
+-- | Main module
+module Main where
+
 import Data.IORef
 import Control.Monad
 import Control.Monad.State
@@ -11,9 +14,12 @@ import State
 import Console
 import Util
 
-main = do
-    evalStateT startGame newGameST
+-- | main just calls evalStateT on startGame passing a new empty game
+main :: IO ()
+main = evalStateT startGame newGameST
 
+-- | contains the flow of the game, the 'engine'
+startGame :: StateT Game IO ()
 startGame = do
     console clearScreen
     console welcome
@@ -37,26 +43,23 @@ startGame = do
     
     nextMove
     
-    playerList <- gets players
-    let shithead = getShithead playerList 
-    case shithead of
-       Nothing -> console showShitheadError
-       _       -> console $ showShithead (name $ fromJust shithead)
-       
--- Functions for game setup
-
+    endGame
+    
+-- | Show all game details
+showGame :: StateT Game IO ()
 showGame = do
     game <- get
     console $ showGameDetails game
 
+-- | Get names of players from user and create them
+getPlayerNames :: StateT Game IO ()
 getPlayerNames = do   
     n <- gets numPlayers
-    playerNames <- forM [1..n] (\num -> do  
-        console $ getPlayerName num)  
+    playerNames <- forM [1..n] (console . getPlayerName)  
     createPlayersST playerNames 
 
--- Functions for swapping cards
-
+-- | Ask a player to swap cards between their hand and face up pile
+doSwap :: (MonadState Game (t IO), MonadTrans t) => Player -> t IO ()
 doSwap player = do
     let theName = name player
     handCardToSwap <- console $ getSwapHand theName
@@ -71,6 +74,9 @@ doSwap player = do
     (when (charToBoolean swapMore) $ 
         doSwap newPlayer)
 
+-- | Ask each player whether they wish to swap cards
+-- between their hand and face up pile
+swapAll :: StateT Game IO [()]
 swapAll = do
     playerList <- gets players
     forM playerList (\player -> do
@@ -81,8 +87,9 @@ swapAll = do
         (when (charToBoolean swap) $ 
             doSwap player))
    
--- Function to perform first move   
-   
+-- | Make the first move by finding the player with the 
+-- lowest cards
+makeFirstMove :: StateT Game IO ()
 makeFirstMove = do
     playerList <- gets players
     let player = playerWithLowestCardFromCircle playerList
@@ -91,8 +98,9 @@ makeFirstMove = do
     dealToHandST player (length cards)
     console $ showMove (name player) cards
 
--- Main game loop functions
-
+-- | The main game play, go through players asking them to play
+-- until there is only one player left
+nextMove :: StateT Game IO ()
 nextMove = do
     moveToNextPlayerST
     ps <- gets players
@@ -108,7 +116,8 @@ nextMove = do
     game <- get
     (when (inPlay game) nextMove)
 
-
+-- | Get a specific player to make a move
+makeMove :: (MonadState Game (t IO), MonadTrans t) => Player -> t IO ()
 makeMove player = do
     str <- console $ askMove (name player) 
     let cardsToPlay = getCards player (indexesFromString str)
@@ -122,10 +131,14 @@ makeMove player = do
             layCardsST player cardsToPlay
             dealToHandST player (length cardsToPlay)
 
+-- | When the player cannot move, make them pick up
+cantMove :: (MonadState Game (t IO), MonadTrans t) => Player -> t IO ()
 cantMove player = do
     console $ pickUpWait (name player)
     pickUpPileST player
 
+-- | Get the player to choose a card from their face down pile
+moveFromFaceDown :: (MonadState Game (t IO), MonadTrans t) => Player -> t IO ()
 moveFromFaceDown player = do
     thePile <- gets pile
     cardToPlay <- console $ askFaceDown (name player)
@@ -138,3 +151,12 @@ moveFromFaceDown player = do
            console $ waitChoiceFail card
            pickUpPileST player
            pickUpFromFaceDownST player card     
+
+-- | Find a show the shithead
+endGame :: StateT Game IO ()
+endGame = do
+    playerList <- gets players
+    let shithead = getShithead playerList 
+    case shithead of
+       Nothing -> console showShitheadError
+       _       -> console $ showShithead (name $ fromJust shithead)
