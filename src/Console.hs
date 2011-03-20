@@ -1,5 +1,10 @@
 module Console where
 
+import Control.Monad.State
+
+console :: (MonadTrans t, Monad m) => m a -> t m a
+console = lift
+
 clearScreen = do
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
     putStrLn "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
