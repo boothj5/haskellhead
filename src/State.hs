@@ -39,10 +39,9 @@ createDeckST ncards nplayers = do
     gen <- lift getStdGen
     let newDeck = newDeckWithEnoughCards ncards nplayers
         shuffledDeck = shuffle' newDeck (length newDeck) gen
-    modify $ \st ->
-                    st { numPlayers     = nplayers
-                        ,numCardsEach   = ncards
-                        ,deck           = shuffledDeck }
+    modify $ \st -> st { numPlayers     = nplayers
+                       , numCardsEach   = ncards
+                       , deck           = shuffledDeck }
    
 -- | create the players
 createPlayersST :: (MonadState Game m) => [String] -> m ()
@@ -66,12 +65,9 @@ layCardsST player cards = do
         nPlayerList = removeCardsFromPlayer player ps cards
         nPlayerList2 = makeCurrentPlayer player nPlayerList
         move = name player ++ " laid the " ++ show cards
-
-    modify $ \st -> 
-                    st { pile    = newPile 
-                        ,players = nPlayerList2
-                        ,lastMove = move }
-
+    modify $ \st -> st { pile    = newPile 
+                       , players = nPlayerList2
+                       , lastMove = move }
     burnST
     missAGoST
 
@@ -85,8 +81,8 @@ burnST = do
         nBurnt = if null nPile then cs ++ bcs else bcs
         nPlayers = if null nPile then last ps:init ps else ps
     modify $ \st -> st { pile    = nPile
-                        ,burnt   = nBurnt
-                        ,players = nPlayers }
+                       , burnt   = nBurnt
+                       , players = nPlayers }
 
 -- | skip the next player if miss a go card was played
 missAGoST :: (MonadState Game m) => m ()

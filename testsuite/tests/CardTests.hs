@@ -118,42 +118,42 @@ testJackOnQueenNotValid =
 testSameRankFalseWhenEmptyList =
     TestCase (assertEqual
         "Test same rank returns false when empty list"
-        False (allRanksSame []))
+        False (allRanksEqual []))
 
 testSameRankTrueWhenOneCard =
     TestCase (assertEqual
         "Test same rank returns true when one card"
-        True (allRanksSame [Card Three Diamonds]))
+        True (allRanksEqual [Card Three Diamonds]))
 
 testSameRankTrueWhenTwoSame =
     TestCase (assertEqual
         "Test same rank returns true when two same"
-        True (allRanksSame [Card Three Diamonds, Card Three Spades]))
+        True (allRanksEqual [Card Three Diamonds, Card Three Spades]))
 
 testSameRankTrueWhenThreeSame =
     TestCase (assertEqual
         "Test same rank returns true when three same"
-        True (allRanksSame [Card Three Diamonds, Card Three Spades, Card Three Hearts]))
+        True (allRanksEqual [Card Three Diamonds, Card Three Spades, Card Three Hearts]))
 
 testSameRankFalseWhenTwoDifferent =
     TestCase (assertEqual
         "Test same rank returns false when two different"
-        False (allRanksSame [Card Three Diamonds, Card Four Spades]))
+        False (allRanksEqual [Card Three Diamonds, Card Four Spades]))
 
 testSameRankFalseWhenThreeDifferent =
     TestCase (assertEqual
         "Test same rank returns false when three different"
-        False (allRanksSame [Card Three Diamonds, Card Four Spades, Card Jack Diamonds]))
+        False (allRanksEqual [Card Three Diamonds, Card Four Spades, Card Jack Diamonds]))
 
 testSameRankFalseWhenThreeSameOneDifferent =
     TestCase (assertEqual
         "Test same rank returns false when three same, one different"
-        False (allRanksSame [Card Three Diamonds, Card Three Spades, Card Three Clubs, Card Four Diamonds]))
+        False (allRanksEqual [Card Three Diamonds, Card Three Spades, Card Three Clubs, Card Four Diamonds]))
 
 testSameRankFalseWhenThreeSameOneDifferentOneMoreSame =
     TestCase (assertEqual
         "Test same rank returns false when three same, one different, and one more same"
-        False (allRanksSame [Card Three Diamonds
+        False (allRanksEqual [Card Three Diamonds
                        , Card Three Spades
                        , Card Three Clubs
                        , Card Four Diamonds

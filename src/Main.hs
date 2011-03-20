@@ -92,7 +92,7 @@ swapAll = do
 makeFirstMove :: StateT Game IO ()
 makeFirstMove = do
     playerList <- gets players
-    let player = playerWithLowestCardFromCircle playerList
+    let player = fromJust $ playerWithLowestCardFromCircle playerList
         cards = lowestCards player    
     layCardsST player cards
     dealToHandST player (length cards)
@@ -123,7 +123,7 @@ makeMove player = do
     let cardsToPlay = getCards player (indexesFromString str)
 
     currentPile <- gets pile
-    if not (validMove (head cardsToPlay) currentPile) || not (allRanksSame cardsToPlay)
+    if not (validMove (head cardsToPlay) currentPile) || not (allRanksEqual cardsToPlay)
         then do 
             console $ showBadMove cardsToPlay
             makeMove player
