@@ -1,6 +1,7 @@
 import Test.HUnit
 import Game
 import HumanPlayer
+import Player
 import Card
 
 -- test player equality

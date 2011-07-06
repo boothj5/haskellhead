@@ -27,6 +27,7 @@ import Data.List
 import Data.Char
 
 import Card
+import Player
 import HumanPlayer
 
 type Pile = [Card]
@@ -66,7 +67,7 @@ validMove c1 (c2:cs)
     | otherwise                = False
 
 -- | Whether or not the player can actually move
-canMove :: HumanPlayer -> Pile -> Bool
+canMove :: (Player a) => a -> Pile -> Bool
 canMove p [] = True
 canMove p cs 
     | hasCardsInHand p   = canMoveFromHand p cs 
@@ -74,14 +75,14 @@ canMove p cs
     | otherwise          = False
 
 -- | Whether or not the player can actually move fromn their hand
-canMoveFromHand :: HumanPlayer -> Pile -> Bool
+canMoveFromHand :: (Player a) => a -> Pile -> Bool
 canMoveFromHand p [] = True
-canMoveFromHand p cs = foldl (\can c -> (validMove c cs || can)) False (hand p)
+canMoveFromHand p cs = foldl (\can c -> (validMove c cs || can)) False (getHand p)
 
 -- | Whether or not the player can actually move fromn their faceUp pile
-canMoveFromFaceUp :: HumanPlayer -> Pile -> Bool
+canMoveFromFaceUp :: (Player a) => a -> Pile -> Bool
 canMoveFromFaceUp p [] = True
-canMoveFromFaceUp p cs = foldl (\can c -> (validMove c cs || can)) False (faceUp p)
+canMoveFromFaceUp p cs = foldl (\can c -> (validMove c cs || can)) False (getFaceUp p)
 
 -- | Whether or not the game is still in play
 -- The game is in play if two or more players have cards

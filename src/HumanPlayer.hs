@@ -1,28 +1,12 @@
 -- | Module for representing players and the functions that may be performed in them
 module HumanPlayer 
 ( HumanPlayer(HumanPlayer, name, hand, faceUp, faceDown)
-, hasCardsInHand
-, hasCardsInFaceUp
-, hasCards
-, addToHand
-, addToFaceUp
-, addToFaceDown
-, swapHandWithFaceUp
-, playerWithLowestCard
-, removeFromHand
-, removeFromFaceUp
-, removeFromFaceDown
-, lowestCards
-, playingFromFaceDown
-, getCards
-, getCard
 ) where 
 
 import Data.Maybe
 import Data.List
 import Card
-
-type Hand = [Card]
+import Player
 
 data HumanPlayer = HumanPlayer { 
                 name         :: String
@@ -42,6 +26,91 @@ instance Show HumanPlayer where
 instance Eq HumanPlayer where
     p1 == p2 = name p1 == name p2
 
+instance Player HumanPlayer where
+
+    getName p = name p
+    
+    getHand p = hand p
+    
+    getFaceUp p = faceUp p
+    
+    getFaceDown p = faceDown p
+    
+    getCard p n 
+        | hasCardsInHand p   = hand p !! fromIntegral n
+        | hasCardsInFaceUp p = faceUp p !! fromIntegral n
+        | otherwise          = faceDown p !! fromIntegral n
+
+    getCards p = map (getCard p) 
+
+    hasCards p = hasCardsInHand p || hasCardsInFaceUp p || hasCardsInFaceDown p
+
+    hasCardsInHand p = not . null . hand $ p
+
+    hasCardsInFaceUp p = not . null . faceUp $ p
+
+    hasCardsInFaceDown p = not . null . faceDown $ p
+
+    playingFromFaceDown p = not (hasCardsInHand p) && not (hasCardsInFaceUp p)
+
+    addToHand p cs = 
+        HumanPlayer { name     = name p
+                    , hand     = sortBy compareCardsSpecialHighest (cs ++ hand p)
+                    , faceUp   = faceUp p
+                    , faceDown = faceDown p }
+
+    addToFaceUp p c = 
+        HumanPlayer { name     = name p
+                    , hand     = hand p
+                    , faceUp   = c : faceUp p
+                    , faceDown = faceDown p }
+
+    addToFaceDown p c = 
+        HumanPlayer { name     = name p
+                    , hand     = hand p
+                    , faceUp   = faceUp p
+                    , faceDown = c : faceDown p }
+
+    swapHandWithFaceUp p h f = 
+        HumanPlayer { name     = name p
+                    , hand     = sortBy compareCardsSpecialHighest (replaceCardWithCard (hand p) handCard faceUpCard)
+                    , faceUp   = replaceCardWithCard (faceUp p) faceUpCard handCard
+                    , faceDown = faceDown p }
+	  where handCard   = hand p !! h
+	        faceUpCard = faceUp p !! f
+
+    playerWithLowestCard p1 p2 = if min p1Min p2Min == p1Min then p1 else p2
+      where p1Min = lowestCard p1
+            p2Min = lowestCard p2
+
+    lowestCard p = minimum $ filter (not . layOnAnythingCard) (hand p)
+
+    lowestCards p = lowest : filter (ranksEqual lowest) handMinusLowest
+      where playersHand     = hand p
+	    lowest          = lowestCard p
+            handMinusLowest = filter (\c -> lowest /= c) playersHand
+
+    removeFromHand p [] = p
+    removeFromHand p cs = 
+        HumanPlayer { name     = name p
+                    , hand     = removeCards cs (hand p)
+                    , faceUp   = faceUp p
+                    , faceDown = faceDown p }
+
+    removeFromFaceUp p [] = p
+    removeFromFaceUp p cs = 
+        HumanPlayer { name     = name p
+                    , hand     = hand p
+                    , faceUp   = removeCards cs (faceUp p)
+                    , faceDown = faceDown p }
+
+    removeFromFaceDown p [] = p
+    removeFromFaceDown p cs = 
+        HumanPlayer { name     = name p
+                    , hand     = hand p
+                    , faceUp   = faceUp p
+                    , faceDown = removeCards cs (faceDown p)  }
+
 -- | Return a string represantation
 showCardAndPos :: Card -> Hand -> String
 showCardAndPos c cs = show c ++ "(" ++ show (fromJust (elemIndex c cs)+1) ++ ")"
@@ -53,120 +122,10 @@ showHand [] _     = ""
 showHand cs True  = foldl (\acc c -> acc ++ "****, ") "" cs
 showHand cs False = foldl (\acc c -> acc ++ showCardAndPos c cs ++ ", ") "" cs
 
--- | Get a card from the player
-getCard :: HumanPlayer -> Integer -> Card
-getCard p n 
-    | hasCardsInHand p   = hand p !! fromIntegral n
-    | hasCardsInFaceUp p = faceUp p !! fromIntegral n
-    | otherwise          = faceDown p !! fromIntegral n
-
--- | Get a number of cards from the player
-getCards :: HumanPlayer -> [Integer] -> [Card]
-getCards p = map (getCard p) 
-
--- | Whether or not the player has any cards
-hasCards :: HumanPlayer -> Bool
-hasCards p = hasCardsInHand p || hasCardsInFaceUp p || hasCardsInFaceDown p
-
--- | Whether or not the player has any cards in their hand
-hasCardsInHand :: HumanPlayer -> Bool
-hasCardsInHand p = not . null . hand $ p
-
--- | Whether or not the player has any cards in their face up pile
-hasCardsInFaceUp :: HumanPlayer -> Bool
-hasCardsInFaceUp p = not . null . faceUp $ p
-
--- | Whether or not the player has any cards in their face down pile
-hasCardsInFaceDown :: HumanPlayer -> Bool
-hasCardsInFaceDown p = not . null . faceDown $ p
-
--- | Whether or not the player is playing from their face down pile
-playingFromFaceDown :: HumanPlayer -> Bool
-playingFromFaceDown p = not (hasCardsInHand p) && not (hasCardsInFaceUp p)
-
--- | Add some cards to the players hand
-addToHand :: HumanPlayer -> [Card] -> HumanPlayer
-addToHand p cs = 
-    HumanPlayer { name     = name p
-           , hand     = sortBy compareCardsSpecialHighest (cs ++ hand p)
-           , faceUp   = faceUp p
-           , faceDown = faceDown p }
-
--- | Add a card to the players face up hand
-addToFaceUp :: HumanPlayer -> Card -> HumanPlayer
-addToFaceUp p c = 
-    HumanPlayer { name     = name p
-           , hand     = hand p
-           , faceUp   = c : faceUp p
-           , faceDown = faceDown p }
-
--- | Add a card to the players face down hand
-addToFaceDown :: HumanPlayer -> Card -> HumanPlayer
-addToFaceDown p c = 
-    HumanPlayer { name     = name p
-           , hand     = hand p
-           , faceUp   = faceUp p
-           , faceDown = c : faceDown p }
-
 -- | Given a hand, replace on card in it with another one passed
 replaceCardWithCard :: Hand -> Card -> Card -> Hand
 replaceCardWithCard h old new = map (\c -> if old == c then new else c) h
 
--- | Swap a card in hand with one in the face up pile
-swapHandWithFaceUp :: HumanPlayer -> Int -> Int -> HumanPlayer
-swapHandWithFaceUp p h f = 
-    HumanPlayer { name     = name p
-           , hand     = sortBy compareCardsSpecialHighest (replaceCardWithCard (hand p) handCard faceUpCard)
-           , faceUp   = replaceCardWithCard (faceUp p) faceUpCard handCard
-           , faceDown = faceDown p }
-    where handCard   = hand p !! h
-          faceUpCard = faceUp p !! f
-
--- | Return the player with the lowest cards
-playerWithLowestCard :: HumanPlayer -> HumanPlayer -> HumanPlayer
-playerWithLowestCard p1 p2 = if min p1Min p2Min == p1Min then p1 else p2
-    where p1Min = lowestCard p1
-          p2Min = lowestCard p2
-
--- | Return the players lowest card from their hand
-lowestCard :: HumanPlayer -> Card
-lowestCard p = minimum $ filter (not . layOnAnythingCard) (hand p)
-
--- | Return the players lowest cards from their hand
-lowestCards :: HumanPlayer -> [Card]
-lowestCards p = lowest : filter (ranksEqual lowest) handMinusLowest
-    where playersHand     = hand p
-          lowest          = lowestCard p
-          handMinusLowest = filter (\c -> lowest /= c) playersHand
-
 -- | Remove cards from a hand
 removeCards :: [Card] -> Hand -> Hand
 removeCards cs = filter (`notElem` cs) 
-
--- | Remove cards from a players hand
-removeFromHand :: HumanPlayer -> [Card] -> HumanPlayer
-removeFromHand p [] = p
-removeFromHand p cs = 
-    HumanPlayer { name     = name p
-           , hand     = removeCards cs (hand p)
-           , faceUp   = faceUp p
-           , faceDown = faceDown p }
-
--- | Remove cards from a players face up pile
-removeFromFaceUp :: HumanPlayer -> [Card] -> HumanPlayer
-removeFromFaceUp p [] = p
-removeFromFaceUp p cs = 
-    HumanPlayer { name     = name p
-           , hand     = hand p
-           , faceUp   = removeCards cs (faceUp p)
-           , faceDown = faceDown p }
-
--- | Remove cards from a players face down pile
-removeFromFaceDown :: HumanPlayer -> [Card] -> HumanPlayer
-removeFromFaceDown p [] = p
-removeFromFaceDown p cs = 
-    HumanPlayer { name     = name p
-           , hand     = hand p
-           , faceUp   = faceUp p
-           , faceDown = removeCards cs (faceDown p)  }
-                       

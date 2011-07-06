@@ -8,6 +8,7 @@ import Data.Maybe
 import Data.Char
 
 import Card
+import Player
 import HumanPlayer
 import Game
 import State
