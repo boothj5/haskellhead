@@ -1,7 +1,7 @@
 import Test.HUnit
 import Data.Maybe
 import Game
-import Player
+import HumanPlayer
 import Card
 import Util
 
@@ -26,15 +26,15 @@ cardC = Card Ten Hearts
 cardD = Card Two Spades
 
 playerWithNoCards = 
-    Player { name = "Mark", hand = [], faceUp = [], faceDown = []}
+    HumanPlayer { name = "Mark", hand = [], faceUp = [], faceDown = []}
 playerWithNoCards2 = 
-    Player { name = "Stevie", hand = [], faceUp = [], faceDown = []}
+    HumanPlayer { name = "Stevie", hand = [], faceUp = [], faceDown = []}
 playerWithFaceDownCardsOnly = 
-    Player { name = "James", hand = [], faceUp = [], faceDown = [cardA]}
+    HumanPlayer { name = "James", hand = [], faceUp = [], faceDown = [cardA]}
 payerWithFaceUpAndFaceDownCards = 
-    Player { name = "Davo", hand = [], faceUp = [cardB], faceDown = [cardA]}
+    HumanPlayer { name = "Davo", hand = [], faceUp = [cardB], faceDown = [cardA]}
 payerWithCardsInAllHands = 
-    Player { name = "Monkey", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
+    HumanPlayer { name = "Monkey", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
 
 twoPlayersWithCards = [playerWithFaceDownCardsOnly, payerWithCardsInAllHands, playerWithNoCards]
 onlyOnePlayerWithCards = [playerWithFaceDownCardsOnly, playerWithNoCards, playerWithNoCards]
@@ -124,11 +124,11 @@ testBurnTenOnMoreThanFourCardsReturnsEmpty =
         [] (burn pile7))
 
 playerWithCards1 = 
-    Player { name = "Monkey", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
+    HumanPlayer { name = "Monkey", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
 playerWithCards2 = 
-    Player { name = "Dude", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
+    HumanPlayer { name = "Dude", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
 playerWithCards3 = 
-    Player { name = "Bob", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
+    HumanPlayer { name = "Bob", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
 
 playerList1 = [playerWithCards1, playerWithCards2, playerWithCards3]
 testNextPlayerWithCardsNextHasCards =

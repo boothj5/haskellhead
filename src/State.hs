@@ -20,7 +20,7 @@ import Control.Monad.State
 import System.Random
 import System.Random.Shuffle
 import Game
-import Player
+import HumanPlayer
 import Card
    
 -- | Initial empty game
@@ -50,14 +50,14 @@ createPlayersST names = do
     modify $ \st -> st { players = newPlayers } 
    
 -- | swap cards between players face up hand and face down hand
-swapCardsST :: (MonadState Game m) => Player -> Int -> Int -> m ()
+swapCardsST :: (MonadState Game m) => HumanPlayer -> Int -> Int -> m ()
 swapCardsST player cardFromHand cardFromFaceUp = do
     playerList <- gets players
     let swappedPlayers = swapForPlayer player playerList cardFromHand cardFromFaceUp
     modify $ \st -> st { players = swappedPlayers }
 
 -- | Lay the cards from the players hand
-layCardsST :: (MonadState Game m) => Player -> [Card] -> m ()
+layCardsST :: (MonadState Game m) => HumanPlayer -> [Card] -> m ()
 layCardsST player cards = do
     ps <- gets players
     p <- gets pile
@@ -94,7 +94,7 @@ missAGoST = do
             modify $ \st -> st { players = newPs })
 
 -- | make player pick up pile
-pickUpPileST :: (MonadState Game m) => Player -> m ()
+pickUpPileST :: (MonadState Game m) => HumanPlayer -> m ()
 pickUpPileST player = do
     cs <- gets pile
     ps <- gets players
@@ -103,7 +103,7 @@ pickUpPileST player = do
     modify $ \st -> st { players = pickedUpPs, pile = [], lastMove = move }
 
 -- | make player pick up chosen card from their face down hand
-pickUpFromFaceDownST :: (MonadState Game m) => Player -> Card -> m ()
+pickUpFromFaceDownST :: (MonadState Game m) => HumanPlayer -> Card -> m ()
 pickUpFromFaceDownST player card = do
     ps <- gets players
     let pickedUpPs = addToPlayersHand player ps [card]
@@ -118,7 +118,7 @@ moveToNextPlayerST = do
     modify $ \st -> st { players = newPs }
 
 -- | deal a card from the deck to the players hand
-dealToHandST :: (MonadState Game m) => Player -> t -> m ()
+dealToHandST :: (MonadState Game m) => HumanPlayer -> t -> m ()
 dealToHandST player num = do
     cs <- gets deck
     ps <- gets players
@@ -132,7 +132,7 @@ dealToHandST player num = do
           modify $ \st -> st { players = dealtPs, deck = drop numToDeal cs })
 
 -- | deal a card from the deck to the players face up hand
-dealToFaceUpST :: (MonadState Game m) => Player -> m ()
+dealToFaceUpST :: (MonadState Game m) => HumanPlayer -> m ()
 dealToFaceUpST p = do
     cs <- gets deck
     ps <- gets players
@@ -140,7 +140,7 @@ dealToFaceUpST p = do
     modify $ \st -> st { players = dealtPs, deck = tail cs }
 
 -- | deal a card from the deck to the players face down hand
-dealToFaceDownST :: (MonadState Game m) => Player -> m ()
+dealToFaceDownST :: (MonadState Game m) => HumanPlayer -> m ()
 dealToFaceDownST p = do
     cs <- gets deck
     ps <- gets players

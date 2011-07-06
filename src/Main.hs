@@ -8,7 +8,7 @@ import Data.Maybe
 import Data.Char
 
 import Card
-import Player
+import HumanPlayer
 import Game
 import State
 import Console
@@ -59,7 +59,7 @@ getPlayerNames = do
     createPlayersST playerNames 
 
 -- | Ask a player to swap cards between their hand and face up pile
-doSwap :: (MonadState Game (t IO), MonadTrans t) => Player -> t IO ()
+doSwap :: (MonadState Game (t IO), MonadTrans t) => HumanPlayer -> t IO ()
 doSwap player = do
     let theName = name player
     handCardToSwap <- console $ getSwapHand theName
@@ -117,7 +117,7 @@ nextMove = do
     (when (inPlay game) nextMove)
 
 -- | Get a specific player to make a move
-makeMove :: (MonadState Game (t IO), MonadTrans t) => Player -> t IO ()
+makeMove :: (MonadState Game (t IO), MonadTrans t) => HumanPlayer -> t IO ()
 makeMove player = do
     str <- console $ askMove (name player) 
     let cardsToPlay = getCards player (indexesFromString str)
@@ -132,13 +132,13 @@ makeMove player = do
             dealToHandST player (length cardsToPlay)
 
 -- | When the player cannot move, make them pick up
-cantMove :: (MonadState Game (t IO), MonadTrans t) => Player -> t IO ()
+cantMove :: (MonadState Game (t IO), MonadTrans t) => HumanPlayer -> t IO ()
 cantMove player = do
     console $ pickUpWait (name player)
     pickUpPileST player
 
 -- | Get the player to choose a card from their face down pile
-moveFromFaceDown :: (MonadState Game (t IO), MonadTrans t) => Player -> t IO ()
+moveFromFaceDown :: (MonadState Game (t IO), MonadTrans t) => HumanPlayer -> t IO ()
 moveFromFaceDown player = do
     thePile <- gets pile
     cardToPlay <- console $ askFaceDown (name player)

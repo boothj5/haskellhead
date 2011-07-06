@@ -1,13 +1,13 @@
 import Test.HUnit
 import Game
-import Player
+import HumanPlayer
 import Card
 
 -- test player equality
-player1 = Player { name = "James", hand = [], faceUp = [], faceDown = []}
-player2 = Player { name = "James", hand = [Card Three Spades], faceUp = [], faceDown = []}
-player3 = Player { name = "Monkey", hand = [Card Three Spades], faceUp = [], faceDown = []}
-player4 = Player { name = "james", hand = [], faceUp = [], faceDown = []}
+player1 = HumanPlayer { name = "James", hand = [], faceUp = [], faceDown = []}
+player2 = HumanPlayer { name = "James", hand = [Card Three Spades], faceUp = [], faceDown = []}
+player3 = HumanPlayer { name = "Monkey", hand = [Card Three Spades], faceUp = [], faceDown = []}
+player4 = HumanPlayer { name = "james", hand = [], faceUp = [], faceDown = []}
 testPlayersEqualDiffCards = 
     TestCase (assertEqual
         "Players equal with different cards"
@@ -29,19 +29,19 @@ cardC = Card Ten Hearts
 cardD = Card Two Spades
 
 playerWithNoCards = 
-    Player { name = "Mark", hand = [], faceUp = [], faceDown = []}
+    HumanPlayer { name = "Mark", hand = [], faceUp = [], faceDown = []}
 playerWithNoCards2 = 
-    Player { name = "Stevie", hand = [], faceUp = [], faceDown = []}
+    HumanPlayer { name = "Stevie", hand = [], faceUp = [], faceDown = []}
 playerWithFaceDownCardsOnly = 
-    Player { name = "James", hand = [], faceUp = [], faceDown = [cardA]}
+    HumanPlayer { name = "James", hand = [], faceUp = [], faceDown = [cardA]}
 payerWithFaceUpAndFaceDownCards = 
-    Player { name = "Davo", hand = [], faceUp = [cardB], faceDown = [cardA]}
+    HumanPlayer { name = "Davo", hand = [], faceUp = [cardB], faceDown = [cardA]}
 payerWithCardsInAllHands = 
-    Player { name = "Monkey", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
+    HumanPlayer { name = "Monkey", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
 playerWithOnlyHand =
-    Player { name = "Sloth", hand = [cardC], faceUp = [], faceDown = []}
+    HumanPlayer { name = "Sloth", hand = [cardC], faceUp = [], faceDown = []}
 playerWithHandAndFaceUp =
-    Player { name = "Sloth", hand = [cardC], faceUp = [cardB], faceDown = []}
+    HumanPlayer { name = "Sloth", hand = [cardC], faceUp = [cardB], faceDown = []}
     
 
 testPlayerHasCardsWhenFaceDownOnly = 
@@ -84,7 +84,7 @@ testPlayingFromFaceDownWhenOnlyFaceDown =
         "Test playing from face down when only cards in facedown"
         (playingFromFaceDown playerWithFaceDownCardsOnly))
 
-playerToSwap = Player { name = "Monkey"
+playerToSwap = HumanPlayer { name = "Monkey"
                       , hand = [Card Ace Spades, Card Three Diamonds, Card Ten Spades]
                       , faceUp = [Card Six Spades, Card Two Hearts, Card Four Diamonds]
                       , faceDown = [Card Seven Clubs, Card Nine Diamonds, Card King Clubs]
@@ -117,21 +117,21 @@ toRemove = [ Card Three Diamonds
            , Card Ten Diamonds ]
 
 playerWithFaceDownForRemove = 
-    Player { name = "Monkey"
+    HumanPlayer { name = "Monkey"
            , hand = []
            , faceUp = []
            , faceDown = beforeRemove
            } 
 
 playerWithFaceUpForRemove = 
-    Player { name = "Monkey"
+    HumanPlayer { name = "Monkey"
            , hand = []
            , faceUp = beforeRemove
            , faceDown = []
            } 
 
 playerWithHandForRemove = 
-    Player { name = "Monkey"
+    HumanPlayer { name = "Monkey"
            , hand = beforeRemove
            , faceUp = []
            , faceDown = []
