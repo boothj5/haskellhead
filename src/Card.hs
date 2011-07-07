@@ -1,8 +1,8 @@
--- | Module for represneting cards and the functions that may be performed on them
+-- | Module for represneting cards and the functions on them
 module Card 
 ( Card(Card, rank)
-, Rank(Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace)
-, Suit(Hearts, Clubs, Diamonds, Spades)
+, Rank(..)
+, Suit(..)
 , compareCardsSpecialHighest
 , layOnAnythingCard
 , ranksEqual
@@ -15,6 +15,7 @@ module Card
 
 import Data.Char
 
+-- | Possible ranks, (Ace is hight in this Enum)
 data Rank = Two 
           | Three 
           | Four 
@@ -30,12 +31,14 @@ data Rank = Two
           | Ace 
             deriving (Show, Eq, Ord, Enum)
 
+-- | Possible Suits
 data Suit = Hearts 
           | Clubs 
           | Diamonds 
           | Spades 
             deriving (Show, Eq, Ord)
 
+-- | The card type, consits of Rank and Suit
 data Card = Card { rank :: Rank
                  , suit :: Suit } deriving (Eq, Ord)
 
@@ -71,7 +74,7 @@ layOnAnyThingRanks = [ burnRank
 layOnAnythingCard :: Card -> Bool
 layOnAnythingCard c = rank c `elem` layOnAnyThingRanks
 
--- | test whether to cards have the same rank
+-- | test whether two cards have the same rank
 ranksEqual :: Card -> Card -> Bool
 ranksEqual c1 c2 = rank c1 == rank c2
 
