@@ -19,24 +19,33 @@ import PlayerCircle
 
 type Pile = [Card]
 type Deck = [Card]
+type Burnt = [Card]
 
 data Game = Game { numPlayers      :: Int
                  , players         :: PlayerCircle
                  , numCardsEach    :: Int
                  , deck            :: Deck
                  , pile            :: Pile
-                 , burnt           :: [Card]
+                 , burnt           :: Burnt
                  , lastMove        :: String
                  } 
                  
 instance Show Game where
-    show game = if null (lastMove game) 
-                   then playersString 
-                   else playersString ++ "\n" ++ lastMove game
-                    where playersString = "\nPile : " ++ show (pile game)
-                            ++ "\n\n" ++ show (length $ deck game) ++ " remaining on deck" 
-                            ++ "\n\n" ++ show (length $ burnt game) ++ " burnt"  
-                            ++ "\n\n" ++ showPlayers (players game)
+    show game  
+        | null (lastMove game) = playersString game
+        | otherwise            = concat [ playersString game
+                                        , "\n"
+                                        , lastMove game ]
+
+playersString :: Game -> String    
+playersString game = concat [ "\nPile : "
+                            , show (pile game)
+                            , "\n\n"
+                            , show (length $ deck game)
+                            , " remaining on deck\n\n"
+                            , show (length $ burnt game)
+                            , " burnt\n\n"
+                            , showPlayers (players game) ]
 
 -- | Whether or not the given cards can be layed on the pile
 validMove :: Card -> Pile -> Bool

@@ -25,8 +25,7 @@ module Player
 ) where
 
 import Card
-
-type Hand = [Card]
+import Hand
 
 class Player a where
   

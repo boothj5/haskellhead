@@ -15,16 +15,35 @@ module Card
 
 import Data.Char
 
-data Rank = Two | Three | Four | Five | Six | Seven | Eight | Nine | Ten | Jack | Queen | King | Ace 
-    deriving (Show, Eq, Ord, Enum)
+data Rank = Two 
+          | Three 
+          | Four 
+          | Five 
+          | Six 
+          | Seven 
+          | Eight 
+          | Nine 
+          | Ten 
+          | Jack 
+          | Queen 
+          | King 
+          | Ace 
+            deriving (Show, Eq, Ord, Enum)
 
-data Suit = Hearts | Clubs | Diamonds | Spades deriving (Show, Eq, Ord)
+data Suit = Hearts 
+          | Clubs 
+          | Diamonds 
+          | Spades 
+            deriving (Show, Eq, Ord)
 
-data Card = Card { rank :: Rank, suit :: Suit }
-    deriving (Eq, Ord)
+data Card = Card { rank :: Rank
+                 , suit :: Suit } deriving (Eq, Ord)
 
 instance Show Card where
-    show (Card rank suit) = fmap toUpper (show rank) ++ " of " ++ fmap toUpper (show suit)
+    show (Card rank suit) = 
+        concat [ fmap toUpper (show rank)
+               , " of "
+               , fmap toUpper (show suit) ]
 
 -- | Card which will burn the pile
 burnRank :: Rank
@@ -44,7 +63,9 @@ resetRank = Two
 
 -- | Cards that can be layed on anything
 layOnAnyThingRanks :: [Rank]
-layOnAnyThingRanks = [burnRank, invisibleRank, resetRank]
+layOnAnyThingRanks = [ burnRank
+                     , invisibleRank
+                     , resetRank ]
 
 -- | test whether a card may be layed on anything
 layOnAnythingCard :: Card -> Bool
@@ -57,7 +78,11 @@ ranksEqual c1 c2 = rank c1 == rank c2
 -- | Test whether all cards in the list have the same rank
 allRanksEqual :: [Card] -> Bool
 allRanksEqual [] = False
-allRanksEqual (c1:cs) = foldl (\same c -> if rank c /= rank c1 then False else same) True cs                        
+allRanksEqual (c1:cs) = 
+    foldl (\same c -> 
+                if rank c /= rank c1 then False else same) 
+          True 
+          cs                        
 
 -- | Compare two cards, special cards are considered higher than any other
 -- but are considered equal to each other

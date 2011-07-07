@@ -62,7 +62,9 @@ getNumCards = do
 -- | Given a players position in the game, request their name
 getPlayerName :: Int -> IO String
 getPlayerName num = do
-    putStrLn $ "Enter name for player " ++ show num ++ ":"  
+    putStrLn $ concat [ "Enter name for player "
+                      , show num
+                      , ":" ]  
     getLine
 
 -- | Show cards dealt message
@@ -79,7 +81,9 @@ showShitheadError = putStrLn "ERROR - NO SHITHEAD :/"
     
 -- | Show the shithead
 showShithead :: (Show a) => a -> IO ()
-showShithead name = putStrLn $ show name ++ " IS A SHITHEAD!!!!!!!!!!!!"
+showShithead name = 
+    putStrLn $ concat [ show name
+                      , " IS A SHITHEAD!!!!!!!!!!!!" ]
     
 -- | Show all game details
 showGameDetails :: (Show a) => a -> IO ()
@@ -88,13 +92,15 @@ showGameDetails = print
 -- | Get card to swap from hand
 getSwapHand :: (Read b) => String -> IO b
 getSwapHand name = do
-    putStrLn $ name ++ ", select a hand card to swap:"
+    putStrLn $ concat [ name
+                      , ", select a hand card to swap:" ]
     fmap read getLine
 
 -- | Get card to swap from face up pile
 getSwapFaceUp :: (Read b) => String -> IO b
 getSwapFaceUp name = do
-    putStrLn $ name ++ ", select a face up card to swap:"
+    putStrLn $ concat [ name
+                      , ", select a face up card to swap:" ]
     fmap read getLine
     
 -- | Show player details
@@ -104,51 +110,66 @@ showPlayer = print
 -- | Ask if the player wishes to swap more cards
 askSwapMore :: String -> IO String
 askSwapMore name = do
-    putStrLn $ name ++ ", do you want to swap more cards?"
+    putStrLn $ concat [ name
+                      , ", do you want to swap more cards?" ]
     getLine
 
 -- | Ask if the player wishes to swap cards
 askSwap :: String -> IO String
 askSwap name = do
-    putStrLn $ name ++ ", do you want to swap cards?"
+    putStrLn $ concat [ name
+                      , ", do you want to swap cards?" ]
     getLine
 
 -- | Show who made the first move
 showMove :: (Show a) => String -> a -> IO ()
-showMove name cards = putStrLn $ name ++ " laid the " ++ show cards
+showMove name cards = 
+    putStrLn $ concat [ name
+                      , " laid the "
+                      , show cards ]
 
 -- | Ask the player to choose some cards to lay
 askMove :: String -> IO String
 askMove name = do
-    putStrLn $ name ++ ", which cards do you wish to lay?"
+    putStrLn $ concat [ name
+                      , ", which cards do you wish to lay?" ]
     getLine
     
 -- | Show message when player chose invalid cards
 showBadMove :: (Show a) => a -> IO ()
-showBadMove cardsToPlay = putStrLn $ "You cannot lay " ++ show cardsToPlay
+showBadMove cardsToPlay = 
+    putStrLn $ concat [ "You cannot lay "
+                      , show cardsToPlay ]
 
 -- | Show a message and wait on user, when player cannot lay
 pickUpWait :: String -> IO String
 pickUpWait name = do
-    putStrLn $ "OH DEAR! " ++ name ++ ", you cannot move."
+    putStrLn $ concat [ "OH DEAR! "
+                      , name
+                      , ", you cannot move." ]
     putStrLn "Press enter to pick up the pile."
     getLine
 
 -- | Ask the player to choose a face down card
 askFaceDown :: (Read b) => String -> IO b
 askFaceDown name = do
-    putStrLn $ name ++ ", which card do you wish choose?"
+    putStrLn $ concat [ name
+                      , ", which card do you wish choose?" ]
     fmap read getLine
 
 -- | Face down card was layable, show message and wait on user
 waitChoiceOk :: (Show a) => a -> IO String
 waitChoiceOk card = do
-    putStrLn $ "Whew you chose the " ++ show card ++ ", press enter,"
+    putStrLn $ concat [ "Whew you chose the "
+                      , show card
+                      , ", press enter," ]
     getLine
 
 -- | Face down card was not layable, show message and wait on user
 waitChoiceFail :: (Show a) => a -> IO String
 waitChoiceFail card = do
-    putStrLn $ "OH DEAR! You chose the " ++ show card ++ ", press enter,"
+    putStrLn $ concat [ "OH DEAR! You chose the "
+                      , show card
+                      , ", press enter," ]
     getLine
 
