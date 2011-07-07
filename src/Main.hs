@@ -10,6 +10,7 @@ import Data.Char
 import Card
 import Player
 import HumanPlayer
+import PlayerCircle
 import Game
 import State
 import Console

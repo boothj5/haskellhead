@@ -5,21 +5,6 @@ import HumanPlayer
 import Card
 import Util
 
--- test moveing through the players
-initial = [1,2,3,4]
-expected = [2,3,4,1]
-testNextTurn = 
-    TestCase (assertEqual 
-        "Test next turn, " 
-        expected (nextTurn initial))
-
-circleList list 0 = list
-circleList list n = circleList (nextTurn list) (n-1)
-testCompleteCicle = 
-    TestCase (assertEqual 
-        "Test complete circle, "
-        initial (circleList initial (length initial)))
-
 cardA = Card Six Spades
 cardB = Card Jack Diamonds
 cardC = Card Ten Hearts
@@ -54,7 +39,6 @@ gameNotInPlay = Game { numPlayers      = 3
                        ,pile            = []
                        ,burnt            = []
                        ,lastMove        = "" }
-
 
 testInPlayWhenTwoPlayersHaveCards = 
     TestCase (assertBool
@@ -123,37 +107,6 @@ testBurnTenOnMoreThanFourCardsReturnsEmpty =
         "Test burn when ten on more than four cards"
         [] (burn pile7))
 
-playerWithCards1 = 
-    HumanPlayer { name = "Monkey", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
-playerWithCards2 = 
-    HumanPlayer { name = "Dude", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
-playerWithCards3 = 
-    HumanPlayer { name = "Bob", hand = [cardC], faceUp = [cardB], faceDown = [cardA]}
-
-playerList1 = [playerWithCards1, playerWithCards2, playerWithCards3]
-testNextPlayerWithCardsNextHasCards =
-    TestCase (assertEqual
-        "Test next player with cards is chosen when next player has cards"
-        "Dude" (name $ head $ moveToNextPlayerWithCards playerList1 ))
-
-playerList2 = [playerWithCards1, playerWithNoCards, playerWithCards2, playerWithCards3]
-testNextPlayerWithCardsNextButOneHasCards =
-    TestCase (assertEqual
-        "Test next player with cards is chosen when next player but one has cards"
-        "Dude" (name $ head $ moveToNextPlayerWithCards playerList2 ))
-
-playerList3 = [playerWithCards1, playerWithNoCards, playerWithNoCards, playerWithCards3]
-testNextPlayerWithCardsNextButTwoHasCards =
-    TestCase (assertEqual
-        "Test next player with cards is chosen when next player but two has cards"
-        "Bob" (name $ head $ moveToNextPlayerWithCards playerList3 ))
-
-playerList4 = [playerWithNoCards, playerWithNoCards, playerWithNoCards, playerWithCards3]
-testNextPlayerWithCardsOnlyLastHasCards =
-    TestCase (assertEqual
-        "Test next player with cards is chosen when only last player has cards"
-        "Bob" (name $ head $ moveToNextPlayerWithCards playerList4 ))
-
 testIntsFromStringOneInt =
     TestCase (assertEqual
         "Test string converted to ints when one int in string"
@@ -170,9 +123,7 @@ testIntsFromStringThreeInts =
         [0, 12, 3] (indexesFromString "1,13,4"))
 
 -- Suite
-tests = TestList [TestLabel "NextTurn" testNextTurn
-                , TestLabel "CompleteCicle " testCompleteCicle 
-                , TestLabel "InPlayWhenTwoPlayersHaveCards" testInPlayWhenTwoPlayersHaveCards
+tests = TestList [TestLabel "InPlayWhenTwoPlayersHaveCards" testInPlayWhenTwoPlayersHaveCards
                 , TestLabel "NotInPlayWhenOnePlayerHasCards" testNotInPlayWhenOnePlayerHasCards
                 , TestLabel "OneDeckRequired" testOneDeckRequired
                 , TestLabel "TwoDeckRequired" testTwoDeckRequired
@@ -184,10 +135,6 @@ tests = TestList [TestLabel "NextTurn" testNextTurn
                 , TestLabel "BurnOnlyFourSixesReturnsEmpty" testBurnOnlyFourSixesReturnsEmpty
                 , TestLabel "BurnFourJakcsOnOtherCardsReturnsEmpty" testBurnFourJakcsOnOtherCardsReturnsEmpty
                 , TestLabel "BurnTenOnMoreThanFourCardsReturnsEmpty" testBurnTenOnMoreThanFourCardsReturnsEmpty
-                , TestLabel "NextPlayerWithCardsNextHasCards" testNextPlayerWithCardsNextHasCards
-                , TestLabel "NextPlayerWithCardsNextButOneHasCards" testNextPlayerWithCardsNextButOneHasCards
-                , TestLabel "NextPlayerWithCardsNextButTwoHasCards" testNextPlayerWithCardsNextButTwoHasCards
-                , TestLabel "NextPlayerWithCardsOnlyLastHasCards" testNextPlayerWithCardsOnlyLastHasCards
                 , TestLabel "IntsFromStringOneInt" testIntsFromStringOneInt
                 , TestLabel "IntsFromStringTwoInts" testIntsFromStringTwoInts
                 , TestLabel "IntsFromStringThreeInts" testIntsFromStringThreeInts

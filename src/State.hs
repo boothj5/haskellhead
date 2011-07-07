@@ -21,6 +21,7 @@ import System.Random
 import System.Random.Shuffle
 import Game
 import HumanPlayer
+import PlayerCircle
 import Card
    
 -- | Initial empty game
